@@ -4,23 +4,8 @@ using VssCodex;
 //   dotnet run --project src/VssCodex -- [options]
 // OUTPUT is derived from proprietary binaries and is written only into the gitignored out/ tree.
 
-var o = new Options();
-for (int i = 0; i < args.Length; i++)
-{
-    switch (args[i])
-    {
-        case "--install" or "-i" when i + 1 < args.Length: o.Install = args[++i]; break;
-        case "--zip" or "-z" when i + 1 < args.Length: o.Zip = args[++i]; break;
-        case "--out" or "-o" when i + 1 < args.Length: o.Out = args[++i]; break;
-        case "--skip-decompile" or "-s": o.SkipDecompile = true; break;
-        case "--no-site": o.NoSite = true; break;
-        case "--help" or "-h": PrintHelp(); return 0;
-        default:
-            Console.Error.WriteLine($"unknown or incomplete argument: {args[i]}");
-            PrintHelp();
-            return 1;
-    }
-}
+var (o, exitCode) = Options.Parse(args);
+if (exitCode is int code) { PrintHelp(); return code; }
 
 return Pipeline.Run(o);
 

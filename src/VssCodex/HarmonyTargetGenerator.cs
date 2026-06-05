@@ -22,7 +22,7 @@ public sealed class HarmonyTargetGenerator
         string asmName = module.Assembly.Name.Name;
         string file = $"patchable-{asmName}.md";
 
-        var types = module.Types.SelectMany(ApiReferenceGenerator.Flatten)
+        var types = module.Types.SelectMany(ApiSurface.Flatten)
             .Where(t => !t.Name.StartsWith('<') && !t.IsInterface) // interfaces have no bodies to patch
             .GroupBy(t => string.IsNullOrEmpty(t.Namespace) ? "(global)" : t.Namespace)
             .OrderBy(g => g.Key, StringComparer.Ordinal)

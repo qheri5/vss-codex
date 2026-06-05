@@ -11,9 +11,10 @@ namespace VssCodex;
 public static class Decompiler
 {
     private static readonly string[] CoreAssemblies =
-        { "VintagestoryAPI", "VintagestoryLib", "VintagestoryServer", "Vintagestory", "VSCrashReporter", "VSCrashReporterLib", "ModMaker" };
-    private static readonly string[] ModAssemblies = { "VSEssentials", "VSSurvivalMod", "VSCreativeMod" };
+        ["VintagestoryAPI", "VintagestoryLib", "VintagestoryServer", "Vintagestory", "VSCrashReporter", "VSCrashReporterLib", "ModMaker"];
+    private static readonly string[] ModAssemblies = ["VSEssentials", "VSSurvivalMod", "VSCreativeMod"];
     private const int DecompileTimeoutMs = 10 * 60 * 1000; // 10 min per assembly
+    private const int InstallTimeoutMs = 5 * 60 * 1000;     // cap the one-off `dotnet tool install`
 
     public static void Run(string install, string refDir)
     {
@@ -32,7 +33,8 @@ public static class Decompiler
             if (Directory.Exists(target)) Directory.Delete(target, recursive: true);
 
             var sw = Stopwatch.StartNew();
-            int exit = RunIlspy(ilspy, target, dll);
+            // Generous per-assembly cap so a hung/looping ilspycmd can't freeze the whole pipeline.
+            int exit = ProcessUtil.Run(ilspy, ["-p", "-o", target, dll], DecompileTimeoutMs, quiet: true);
             sw.Stop();
             int files = Directory.Exists(target) ? Directory.GetFiles(target, "*.cs", SearchOption.AllDirectories).Length : 0;
             if (exit != 0) { partial.Add(name); Console.WriteLine($"  [{idx}/{total}] {name}: PARTIAL ({files} files, exit {exit}) {sw.Elapsed.TotalSeconds:n1}s"); }
@@ -43,38 +45,6 @@ public static class Decompiler
         foreach (var a in ModAssemblies) One(a, Path.Combine(install, "Mods", $"{a}.dll"));
         if (partial.Count > 0) Console.WriteLine($"  note: partial decompile for: {string.Join(", ", partial)}");
         Console.WriteLine($"  decompiled -> {dec}");
-    }
-
-    private static int RunIlspy(string ilspy, string target, string dll)
-    {
-        var psi = new ProcessStartInfo(ilspy)
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        psi.ArgumentList.Add("-p");
-        psi.ArgumentList.Add("-o");
-        psi.ArgumentList.Add(target);
-        psi.ArgumentList.Add(dll);
-        try
-        {
-            using var p = new Process { StartInfo = psi };
-            p.OutputDataReceived += static (_, _) => { };  // drain so the child can't block
-            p.ErrorDataReceived += static (_, _) => { };
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
-            // Generous per-assembly cap so a hung/looping ilspycmd can't freeze the whole pipeline.
-            if (!p.WaitForExit(DecompileTimeoutMs))
-            {
-                try { p.Kill(entireProcessTree: true); } catch { }
-                return -2; // caller treats a non-zero exit as a partial decompile
-            }
-            p.WaitForExit(); // flush the async output readers
-            return p.ExitCode;
-        }
-        catch { return -1; }
     }
 
     /// <summary>Find ilspycmd on PATH or in the per-user dotnet-tools dir; auto-install it if missing.</summary>
@@ -89,10 +59,7 @@ public static class Decompiler
         if (File.Exists(toolPath)) return toolPath;
 
         Console.WriteLine("  installing ilspycmd (global dotnet tool) ...");
-        var psi = new ProcessStartInfo("dotnet") { UseShellExecute = false };
-        psi.ArgumentList.Add("tool"); psi.ArgumentList.Add("install");
-        psi.ArgumentList.Add("--global"); psi.ArgumentList.Add("ilspycmd");
-        try { using var p = Process.Start(psi); p!.WaitForExit(); } catch { }
+        ProcessUtil.Run("dotnet", ["tool", "install", "--global", "ilspycmd"], InstallTimeoutMs);
 
         if (File.Exists(toolPath)) return toolPath;
         if (ProcessUtil.FindOnPath(exe) is string p2) return p2;

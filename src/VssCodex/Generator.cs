@@ -30,9 +30,11 @@ public static class Generator
         var apiModule = ctx.ReadModule("VintagestoryAPI.dll");
         // The assembly version is unreliable across builds (older VS stamps 1.0.0.0). Use the real
         // game version from the API's GameVersion.ShortGameVersion const; fall back to the asm version.
-        string version = apiModule.GetType("Vintagestory.API.Config.GameVersion")?.Fields
-                .FirstOrDefault(f => f.Name == "ShortGameVersion" && f.IsLiteral)?.Constant as string
-            ?? apiModule.Assembly.Name.Version.ToString();
+        string? shortVersion = apiModule.GetType("Vintagestory.API.Config.GameVersion")?.Fields
+                .FirstOrDefault(f => f.Name == "ShortGameVersion" && f.IsLiteral)?.Constant as string;
+        string version = shortVersion ?? apiModule.Assembly.Name.Version?.ToString() ?? "0.0.0";
+        if (shortVersion == null)
+            Console.WriteLine($"  warning: GameVersion.ShortGameVersion not found; falling back to assembly version {version}");
 
         var (apiTypes, apiNs, apiDocumented) = new ApiReferenceGenerator(xml, inherit, genDate).Generate(apiModule, apiDir);
         Console.WriteLine($"  API   : {apiTypes} public types in {apiNs} namespaces");
@@ -41,10 +43,10 @@ public static class Generator
         Console.WriteLine($"  Index : {evCount} events, {enCount} enums");
 
         string[] harmonyAssemblies =
-        {
+        [
             "VintagestoryLib.dll", "VintagestoryServer.dll", "Vintagestory.dll",
             "VSEssentials.dll", "VSSurvivalMod.dll", "VSCreativeMod.dll",
-        };
+        ];
 
         var hgen = new HarmonyTargetGenerator(genDate);
         var stats = new List<HarmonyTargetGenerator.AssemblyStats>();

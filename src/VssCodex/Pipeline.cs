@@ -2,15 +2,6 @@ using System.Diagnostics;
 
 namespace VssCodex;
 
-public sealed class Options
-{
-    public string? Install;
-    public string? Zip;
-    public string? Out;
-    public bool SkipDecompile;
-    public bool NoSite;
-}
-
 /// <summary>
 /// The orchestrator: resolve the install, decompile, generate, and install the docs + render the
 /// skill - all in one cross-platform process. Output goes to out/.

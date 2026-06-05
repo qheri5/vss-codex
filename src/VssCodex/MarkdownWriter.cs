@@ -26,19 +26,6 @@ public static class MarkdownWriter
     public static string AssemblyLabel(ModuleDefinition m) =>
         $"{m.Assembly.Name.Name}.dll v{m.Assembly.Name.Version}";
 
-    /// <summary>GitHub-style anchor slug for a heading.</summary>
-    public static string Slug(string text)
-    {
-        var sb = new StringBuilder(text.Length);
-        foreach (char c in text.ToLowerInvariant())
-        {
-            if (char.IsLetterOrDigit(c)) sb.Append(c);
-            else if (c is ' ' or '-' or '_' or '.') sb.Append('-');
-            // drop other punctuation
-        }
-        return sb.ToString();
-    }
-
     public static void Write(string outDir, string relativePath, string content)
     {
         string full = Path.Combine(outDir, relativePath);

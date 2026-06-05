@@ -60,3 +60,40 @@ public class DerivedDoc : IDocumented
 {
     public virtual void Described() { }
 }
+
+// -- type-declaration / modifier matrix --------------------------------------
+
+public enum EnumFixture { A, B = 5 }
+
+public struct StructFixture { public int X; }
+
+public sealed class SealedFixture { }
+
+public class Combined : AbstractFixture, IDocumented
+{
+    public override void DoAbstract() { }
+    public void Described() { }
+}
+
+public class BaseV { public virtual void Vm() { } }
+
+public sealed class SealedOverrideFixture : BaseV { public sealed override void Vm() { } }
+
+public class Members
+{
+    public const int K = 3;
+    public static readonly int RO = 4;
+#pragma warning disable CS0067 // read via Cecil metadata, never invoked
+    public static event Action? Ping;
+#pragma warning restore CS0067
+}
+
+// Overload pair for the inherited-doc disambiguation test: the base has only the 1-arg Op, the
+// derived adds a 2-arg Op that has NO matching base overload.
+public class OverloadBase { public virtual void Op(int a) { _ = a; } }
+
+public class OverloadDerived : OverloadBase
+{
+    public override void Op(int a) { _ = a; }
+    public void Op(int a, int b) { _ = a; _ = b; }
+}

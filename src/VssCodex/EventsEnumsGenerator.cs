@@ -9,29 +9,15 @@ namespace VssCodex;
 /// (with inheritance) like the main API doc. VS modding is event-driven and enums are scattered
 /// one-per-file, so these two consolidated pages are the most frequent lookups.
 /// </summary>
-public sealed class EventsEnumsGenerator
+public sealed class EventsEnumsGenerator : DocGenerator
 {
-    private readonly XmlDocIndex _xml;
-    private readonly InheritDocResolver? _inherit;
-    private readonly string _genDate;
-
     public EventsEnumsGenerator(XmlDocIndex xml, InheritDocResolver? inherit, string genDate)
-    {
-        _xml = xml;
-        _inherit = inherit;
-        _genDate = genDate;
-    }
-
-    private string? Summary(IMemberDefinition m, string id) => _xml.Get(id) ?? _inherit?.Resolve(m);
+        : base(xml, inherit, genDate) { }
 
     public (int events, int enums) Generate(ModuleDefinition module, string outDir)
     {
         string label = MarkdownWriter.AssemblyLabel(module);
-        var apiTypes = module.Types.SelectMany(ApiReferenceGenerator.Flatten)
-            .Where(ApiReferenceGenerator.IsPublicSurface)
-            .Where(t => !ApiReferenceGenerator.IsCompilerGenerated(t))
-            .Where(t => SignatureFormatter.RootNamespace(t).StartsWith("Vintagestory.API", StringComparison.Ordinal))
-            .ToList();
+        var apiTypes = ApiSurface.PublicTypes(module).ToList();
 
         int events = WriteEvents(apiTypes, label, outDir);
         int enums = WriteEnums(apiTypes, label, outDir);
@@ -47,7 +33,7 @@ public sealed class EventsEnumsGenerator
         // Events grouped by declaring type (only types that actually expose events).
         int count = 0;
         var withEvents = apiTypes
-            .Select(t => (t, evs: t.Events.Where(e => e.AddMethod is { IsPublic: true } or { IsFamily: true }).ToList()))
+            .Select(t => (t, evs: t.Events.Where(MemberVisibility.IsVisibleEvent).ToList()))
             .Where(x => x.evs.Count > 0)
             .OrderBy(x => SignatureFormatter.RootNamespace(x.t) + "." + x.t.Name, StringComparer.Ordinal)
             .ToList();
