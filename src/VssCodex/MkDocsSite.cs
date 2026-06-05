@@ -120,20 +120,22 @@ public static class MkDocsSite
     // not file://). Both are written regardless of OS; the user runs the one for their platform.
     private static void WriteServeScripts(string siteDir)
     {
+        // Serve the reference ROOT (the parent of site/) so the "view decompiled source" links into
+        // ../decompiled/ resolve too; open the docs at /site/index.html. Search + source both need HTTP.
         try
         {
             File.WriteAllText(Path.Combine(siteDir, "serve-docs.cmd"),
                 "@echo off\r\n" +
-                "rem Serve the offline docs and open them - Material's search needs HTTP, not file://.\r\n" +
-                "cd /d \"%~dp0\"\r\n" +
-                "start \"\" http://localhost:8000/\r\n" +
+                "rem Serve the offline reference and open the docs - search & view-source need HTTP, not file://.\r\n" +
+                "cd /d \"%~dp0..\"\r\n" +
+                "start \"\" http://localhost:8000/site/index.html\r\n" +
                 "python -m http.server 8000\r\n");
 
             string sh =
                 "#!/usr/bin/env sh\n" +
-                "# Serve the offline docs and open them - Material's search needs HTTP, not file://.\n" +
-                "cd \"$(dirname \"$0\")\"\n" +
-                "( sleep 1; (xdg-open http://localhost:8000/ 2>/dev/null || open http://localhost:8000/ 2>/dev/null) ) &\n" +
+                "# Serve the offline reference and open the docs - search & view-source need HTTP, not file://.\n" +
+                "cd \"$(dirname \"$0\")/..\"\n" +
+                "( sleep 1; (xdg-open http://localhost:8000/site/index.html 2>/dev/null || open http://localhost:8000/site/index.html 2>/dev/null) ) &\n" +
                 "python3 -m http.server 8000\n";
             string shPath = Path.Combine(siteDir, "serve-docs.sh");
             File.WriteAllText(shPath, sh);

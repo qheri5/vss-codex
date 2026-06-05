@@ -119,9 +119,10 @@ out/
 > (Linux/macOS) in `out/reference/site/`.** It serves the folder and opens it at
 > <http://localhost:8000>.
 
-Don't open `index.html` directly: Material's **search** loads its index over HTTP and can't run from a
-`file://` page, so opening the file directly shows the pages but no working search. `serve-docs.*` is
-the one-click way to get the full experience.
+Don't open `index.html` directly: Material's **search** — and each API type's **"view decompiled
+source"** link — load over HTTP and can't run from a `file://` page, so opening the file directly shows
+the pages but no working search or source view. `serve-docs.*` is the one-click way to get the full
+experience (it serves the reference root so the source links into `decompiled/` resolve).
 
 ### Using the skill
 
