@@ -13,12 +13,17 @@ namespace VssCodex;
 /// </summary>
 public sealed class ApiReferenceGenerator : DocGenerator
 {
+    private string? _decompiledRoot;  // <reference>/decompiled, for "view source" links (null = no links)
+    private string _assembly = "";    // the decompiled assembly folder name (e.g. "VintagestoryAPI")
+
     public ApiReferenceGenerator(XmlDocIndex xml, InheritDocResolver? inherit, string genDate)
         : base(xml, inherit, genDate) { }
 
-    public (int types, int namespaces, int documented) Generate(ModuleDefinition module, string outDir, bool engineInternal = false)
+    public (int types, int namespaces, int documented) Generate(ModuleDefinition module, string outDir, bool engineInternal = false, string? decompiledRoot = null)
     {
         string label = MarkdownWriter.AssemblyLabel(module);
+        _decompiledRoot = decompiledRoot;
+        _assembly = label.Split('.')[0];   // "VintagestoryAPI.dll v1.22.3" -> "VintagestoryAPI"
 
         var types = ApiSurface.PublicTypes(module, engineInternal).ToList();
 
@@ -86,6 +91,7 @@ public sealed class ApiReferenceGenerator : DocGenerator
         sb.AppendLine($"```csharp\n{SignatureFormatter.TypeDeclaration(t)}\n```");
         string? sum = Summary(t, DocId.ForType(t));
         if (sum != null) sb.AppendLine().AppendLine(sum);
+        if (SourceLink(t) is string src) sb.AppendLine().AppendLine($"[view decompiled source]({src})");
         sb.AppendLine();
 
         if (t.IsEnum) { WriteEnum(sb, t); sb.AppendLine("---").AppendLine(); return; }
@@ -153,6 +159,30 @@ public sealed class ApiReferenceGenerator : DocGenerator
         sb.Append("- ").Append(SignatureFormatter.ObsoletePrefix(member)).Append('`').Append(signature).Append('`');
         if (summary != null) sb.Append(" — ").Append(summary);
         sb.AppendLine();
+    }
+
+    /// <summary>
+    /// Root-absolute link to a type's decompiled .cs, or null if it isn't present. The file is the
+    /// OUTERMOST declaring type's (ilspy puts nested types in the parent's file) and generic arity is
+    /// dropped from the name. Root-absolute (/decompiled/...) so it resolves when the site is served
+    /// from the reference root (see MkDocsSite's serve-docs scripts); emitted only when the file exists,
+    /// so a partial or skipped decompile simply yields no link.
+    /// </summary>
+    private string? SourceLink(TypeDefinition t)
+    {
+        if (_decompiledRoot == null) return null;
+
+        var outer = t;
+        while (outer.DeclaringType != null) outer = outer.DeclaringType;
+        string name = outer.Name;
+        int tick = name.IndexOf('`');
+        if (tick >= 0) name = name[..tick];
+
+        string rel = string.IsNullOrEmpty(outer.Namespace)
+            ? $"{_assembly}/{name}.cs"
+            : $"{_assembly}/{outer.Namespace}/{name}.cs";
+        string full = Path.Combine(_decompiledRoot, rel.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(full) ? "/decompiled/" + rel : null;
     }
 
     private static string NamespaceFile(string ns) => ns.Replace("(global)", "global") + ".md";

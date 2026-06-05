@@ -43,6 +43,26 @@ public class GeneratorTests
     }
 
     [Fact]
+    public void ApiReference_emits_view_source_link_only_when_the_cs_exists()
+    {
+        string root = Directory.CreateTempSubdirectory().FullName;
+        string dir = Path.Combine(root, "out");
+        string decompiled = Path.Combine(root, "decompiled");
+        // The generator derives the assembly folder as label.Split('.')[0] -> "VssCodex" for this test asm.
+        string csDir = Path.Combine(decompiled, "VssCodex", "VssCodex.Tests.Fixtures");
+        Directory.CreateDirectory(csDir);
+        File.WriteAllText(Path.Combine(csDir, "Simple.cs"), "// decompiled");
+
+        new ApiReferenceGenerator(NoXml(), null, "2026-01-01")
+            .Generate(TestModule.Self, dir, engineInternal: true, decompiledRoot: decompiled);
+
+        string md = File.ReadAllText(Path.Combine(dir, "VssCodex.Tests.Fixtures.md"));
+        Assert.Contains("[view decompiled source](/decompiled/VssCodex/VssCodex.Tests.Fixtures/Simple.cs)", md);
+        // a type whose .cs we did not create gets no link
+        Assert.DoesNotContain("/decompiled/VssCodex/VssCodex.Tests.Fixtures/Outer.cs", md);
+    }
+
+    [Fact]
     public void EventsEnums_runs_and_writes_pages()
     {
         string dir = Directory.CreateTempSubdirectory().FullName;

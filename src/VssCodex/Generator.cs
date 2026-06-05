@@ -17,6 +17,9 @@ public static class Generator
         string genDate = DateTime.Now.ToString("yyyy-MM-dd");
         string apiDir = Path.Combine(genRoot, "api");
         string harmonyDir = Path.Combine(genRoot, "harmony");
+        // The decompiled .cs tree lives at <reference>/decompiled (genRoot = <reference>/docs/generated);
+        // the API pages link into it for "view source".
+        string decompiledRoot = Path.Combine(Directory.GetParent(genRoot)!.Parent!.FullName, "decompiled");
 
         // Clean generated output, but preserve the hand-written curated guide + the version snapshot.
         CleanGenerated(apiDir, harmonyDir);
@@ -36,7 +39,7 @@ public static class Generator
         if (shortVersion == null)
             Console.WriteLine($"  warning: GameVersion.ShortGameVersion not found; falling back to assembly version {version}");
 
-        var (apiTypes, apiNs, apiDocumented) = new ApiReferenceGenerator(xml, inherit, genDate).Generate(apiModule, apiDir);
+        var (apiTypes, apiNs, apiDocumented) = new ApiReferenceGenerator(xml, inherit, genDate).Generate(apiModule, apiDir, decompiledRoot: decompiledRoot);
         Console.WriteLine($"  API   : {apiTypes} public types in {apiNs} namespaces");
 
         var (evCount, enCount) = new EventsEnumsGenerator(xml, inherit, genDate).Generate(apiModule, apiDir);
@@ -76,7 +79,7 @@ public static class Generator
         {
             // inherit:null keeps this fast; engine internals are signature-first.
             (libTypes, int libNs, _) = new ApiReferenceGenerator(xml, null, genDate)
-                .Generate(libModule, Path.Combine(apiDir, "lib"), engineInternal: true);
+                .Generate(libModule, Path.Combine(apiDir, "lib"), engineInternal: true, decompiledRoot: decompiledRoot);
             Console.WriteLine($"  Lib   : {libTypes} public engine types in {libNs} namespaces");
         }
 

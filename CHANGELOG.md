@@ -4,6 +4,16 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
+## [1.3.0] - 2026-06-05
+
+### Added
+- **"View decompiled source" links**: each API type's page now links to its decompiled `.cs` (the
+  outermost declaring type's file), so you can jump straight from the doc to the real implementation.
+  Lightweight (a plain link to the `.cs`, not a rendered copy — the search index stays lean) and emitted
+  only when the file exists, so a partial or skipped decompile simply yields no link. The `serve-docs`
+  launchers now serve the reference root and open `/site/index.html`, so the source links into
+  `decompiled/` resolve over HTTP (like search, this needs the local server, not a `file://` page).
+
 ## [1.2.2] - 2026-06-05
 
 ### Changed
