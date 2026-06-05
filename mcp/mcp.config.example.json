@@ -1,0 +1,13 @@
+{
+  "_comment": "Example Claude Code MCP registration for the vss server (A1 scaffold). Merge into your project .mcp.json or run `claude mcp add`. Adjust the python path and env. The tools are stubs until the live integration is written — see vss-codex/mcp/README.md.",
+  "mcpServers": {
+    "vss": {
+      "command": "python",
+      "args": ["vss-codex/mcp/server/server.py"],
+      "env": {
+        "VSS_SSH_HOST": "weavy@192.168.1.80",
+        "VSS_CONTAINER": "vsserver-dev"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+# vss-codex — committable tooling only. The proprietary OUTPUT (decompiled code + generated docs)
+# is written OUTSIDE this repo, into the gitignored ../vs-game-reference/ tree. These rules are a
+# safety net so nothing derived from VS binaries can ever be committed here.
+
+# .NET build output
+bin/
+obj/
+
+# Generator handoff / outputs (only ever written under vs-game-reference/, never here — defensive)
+build-info.json
+.snapshot-*.json
+decompiled/
+
+# MCP scaffold runtime
+mcp/server/.venv/
+mcp/server/__pycache__/
+mcp/server/**/__pycache__/
+node_modules/
+
+# OS / editors
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vs/
+*.user
