@@ -15,7 +15,9 @@ public class Simple
     public int Field;
     public string Name { get; set; } = "";
     public int? NullableProp { get; set; }
+#pragma warning disable CS0067 // read via Cecil metadata, never invoked
     public event Action? Changed;
+#pragma warning restore CS0067
 
     public void M(int x) { _ = x; }
     public void Arr(int[] a) { _ = a; }

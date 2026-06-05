@@ -16,7 +16,8 @@ this is a growing skill-like reference for the engine.
 
 ### Auto-generated (`generated/`, via `vss-codex`)
 - [generated/api/INDEX.md](generated/api/INDEX.md) — **API endpoints reference**: the public modding
-  surface of `VintagestoryAPI.dll` (~1095 types in 12 `Vintagestory.API.*` namespaces), with official
+  surface of `VintagestoryAPI.dll` (~1,100 types in 12 `Vintagestory.API.*` namespaces; exact count in
+  `build-info.json`), with official
   `<summary>` text merged from `VintagestoryAPI.xml` and inherited from base types/interfaces. One
   file per namespace. Constructors and `[Obsolete]` markers included.
 - [generated/api/events.md](generated/api/events.md) — **events & delegates** catalog (the
@@ -31,9 +32,10 @@ this is a growing skill-like reference for the engine.
 - `generated/CHANGELOG-<old>-to-<new>.md` — **version diff** (added/removed members, flipped
   patchability), written after a VS update by comparing the new run to the prior `.snapshot-*.json`.
 
-> **Generated vs hand-written:** the script rebuilds everything under `generated/` **except**
-> `high-value-targets.md` (hand-maintained, never overwritten). Don't hand-edit `INDEX.md` /
-> `patchable-*.md` / `api/*`.
+> **Generated vs hand-written:** the generator rebuilds everything under `generated/` **except**
+> `high-value-targets.md`. That one is hand-maintained at its source — `vss-codex/docs-src/high-value-targets.md`
+> — and reinstalled here on each run; edit the source, not this copy. Don't hand-edit `INDEX.md` /
+> `patchable-*.md` / `api/*` either (regenerated every run).
 >
 > **Structure (deviations from the original plan):** Doc A is **one file per namespace** (not split
 > by category) and Doc B is **one `patchable-<assembly>.md` per assembly** (not a single file) —

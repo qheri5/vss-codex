@@ -64,8 +64,8 @@ out/reference/decompiled/  ──►  out/reference/docs/generated/ + build-info
 ## Key design decisions
 
 - **Mono.Cecil over text parsing** — exact signatures + reliable patchability (`HasBody && !abstract
-  && !extern`); already shipped in the VS install.
+  && !extern`); a small, well-tested NuGet library (no coupling to the game install).
 - **API allowlist `Vintagestory.API.*`** — drops bundled OSS / engine namespaces from the API doc.
-- **Generator never overwrites `high-value-targets.md`** — it is hand-curated (installed from
-  `docs-src/`).
+- **Generator never overwrites `high-value-targets.md`** — it is hand-curated; the committed
+  `docs-src/high-value-targets.md` is the source of truth and is reinstalled into the output each run.
 - **Everything version-stamped** — re-run after a VS update; the CHANGELOG tells you what moved.

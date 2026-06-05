@@ -1,8 +1,9 @@
 # Harmony high-value patch targets — server performance
 
-> **⚠️ HAND-WRITTEN — DO NOT COMMIT.** Lives in the gitignored output tree. **Not auto-generated** —
-> `vss-codex` writes `INDEX.md` and `patchable-*.md` but never touches this file. Maintain it by hand;
-> re-verify line numbers after a VS update (the decompiled tree is the source of truth).
+> **⚠️ HAND-WRITTEN — committed source of truth.** This file lives at `vss-codex/docs-src/high-value-targets.md`;
+> `vss-codex` installs a copy into the (gitignored) output tree each run and **never machine-generates
+> it** (unlike `INDEX.md` / `patchable-*.md`). Edit the `docs-src/` source — not the installed copy —
+> and re-verify line numbers after a VS update (the decompiled tree is the source of truth for those).
 
 Curated shortlist of the methods that actually move server CPU, for server-optimization work. The
 exhaustive machine catalog is in `patchable-*.md`; *how* to patch safely is in the skill's

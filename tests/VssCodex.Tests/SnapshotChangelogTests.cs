@@ -56,6 +56,27 @@ public class SnapshotChangelogTests
     }
 
     [Fact]
+    public void Changelog_diffs_against_numerically_latest_prior_version()
+    {
+        // Regression: ordinal sort would pick "1.9" as newer than "1.10". It must pick 1.10.
+        string dir = Directory.CreateTempSubdirectory().FullName;
+
+        var v9 = new SymbolSnapshot { Version = "1.9.0" };
+        v9.Symbols["T:Old"] = "";
+        v9.Save(Path.Combine(dir, ".snapshot-1.9.0.json"));
+
+        var v10 = new SymbolSnapshot { Version = "1.10.0" };
+        v10.Symbols["T:Mid"] = "";
+        v10.Save(Path.Combine(dir, ".snapshot-1.10.0.json"));
+
+        var cur = new SymbolSnapshot { Version = "1.11.0" };
+        cur.Symbols["T:New"] = "";
+
+        string? file = new ChangelogGenerator("2026-01-01").Process(cur, dir);
+        Assert.Equal("CHANGELOG-1.10.0-to-1.11.0.md", file);
+    }
+
+    [Fact]
     public void First_run_writes_no_changelog()
     {
         string dir = Directory.CreateTempSubdirectory().FullName;
