@@ -91,9 +91,6 @@ $RunTimer = [System.Diagnostics.Stopwatch]::StartNew()
 function Step($msg, [scriptblock]$body) {
     $script:StepNo++
     Write-Host ""
-    Write-Host ("==============================================================") -ForegroundColor DarkCyan
-    Write-Host (">>> STEP $script:StepNo/$TotalSteps  -  $msg") -ForegroundColor Cyan
-    Write-Host ("==============================================================") -ForegroundColor DarkCyan
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     & $body
     if ($LASTEXITCODE -ne $null -and $LASTEXITCODE -ne 0) { throw "step $script:StepNo failed (exit $LASTEXITCODE)" }
@@ -110,7 +107,7 @@ Write-Host "  reference : $Ref"
 Write-Host "  steps     : $TotalSteps$(if($SkipDecompile){' (decompile skipped)'})"
 
 if ($SkipDecompile) {
-    Write-Host "`n>>> STEP -/-  -  decompile SKIPPED (-SkipDecompile, reusing existing decompiled tree)" -ForegroundColor DarkYellow
+    Write-Host "`n  (decompile skipped: -SkipDecompile, reusing existing decompiled tree)" -ForegroundColor DarkYellow
 } else {
     Step 'decompile the 10 VS-authored assemblies (ilspycmd)' { & "$RepoRoot\steps\01-decompile.ps1" -Install $Install -Ref $Ref }
 }
