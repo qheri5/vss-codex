@@ -63,6 +63,39 @@ public class GeneratorTests
     }
 
     [Fact]
+    public void ApiReference_engineInternal_does_not_flag_signature_only_types()
+    {
+        // Engine assemblies have no XML at all and carry a global "signatures only" banner, so the
+        // per-type "No official summary" badge would be pure noise across hundreds of types.
+        string dir = Directory.CreateTempSubdirectory().FullName;
+        new ApiReferenceGenerator(NoXml(), null, "2026-01-01").Generate(TestModule.Self, dir, engineInternal: true);
+        string md = File.ReadAllText(Path.Combine(dir, "VssCodex.Tests.Fixtures.md"));
+        Assert.DoesNotContain("No official summary", md);
+    }
+
+    [Fact]
+    public void ApiReference_index_explains_the_signature_only_flag_in_normal_mode()
+    {
+        // Normal mode filters to Vintagestory.API.* (zero test types), but the INDEX coverage note is
+        // still written and must tell the reader what the signature-only flag means.
+        string dir = Directory.CreateTempSubdirectory().FullName;
+        new ApiReferenceGenerator(NoXml(), null, "2026-01-01").Generate(TestModule.Self, dir, engineInternal: false);
+        string idx = File.ReadAllText(Path.Combine(dir, "INDEX.md"));
+        Assert.Contains("signature-only", idx);
+    }
+
+    [Fact]
+    public void ApiReference_small_namespace_gets_no_overview_list()
+    {
+        // The per-namespace "Types in this namespace" overview only fires for large namespaces; the
+        // small fixtures namespace must not get one (it would be noise).
+        string dir = Directory.CreateTempSubdirectory().FullName;
+        new ApiReferenceGenerator(NoXml(), null, "2026-01-01").Generate(TestModule.Self, dir, engineInternal: true);
+        string md = File.ReadAllText(Path.Combine(dir, "VssCodex.Tests.Fixtures.md"));
+        Assert.DoesNotContain("Types in this namespace", md);
+    }
+
+    [Fact]
     public void EventsEnums_runs_and_writes_pages()
     {
         string dir = Directory.CreateTempSubdirectory().FullName;

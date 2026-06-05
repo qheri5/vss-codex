@@ -29,6 +29,13 @@ public sealed class EventsEnumsGenerator : DocGenerator
         var sb = new StringBuilder(MarkdownWriter.Header("API — events & delegates", label, _genDate));
         sb.AppendLine("[← API index](INDEX.md)").AppendLine();
         sb.AppendLine("The event-driven modding surface. Subscribe in `StartServerSide`/`StartClientSide`.").AppendLine();
+        sb.AppendLine("> **Read the side.** Events are grouped by the type that declares them, and each section")
+          .AppendLine("> shows that type's namespace. The **same event name can exist on both sides** — e.g. a")
+          .AppendLine("> client one under `Vintagestory.API.Client` (`IClientEventAPI`, subscribe in")
+          .AppendLine("> `StartClientSide`) and a server one under `Vintagestory.API.Server` (`IServerEventAPI`,")
+          .AppendLine("> subscribe in `StartServerSide`). They are different events with different handler")
+          .AppendLine("> signatures; match the section's namespace to the side you're coding. **handler:** below")
+          .AppendLine("> each event is the exact method shape to write.").AppendLine();
 
         // Events grouped by declaring type (only types that actually expose events).
         int count = 0;
@@ -46,6 +53,8 @@ public sealed class EventsEnumsGenerator : DocGenerator
             {
                 sb.Append("- ").Append(SignatureFormatter.ObsoletePrefix(e))
                   .Append('`').Append(SignatureFormatter.EventSignature(e)).Append('`');
+                if (SignatureFormatter.DelegateHandler(e.EventType) is string handler)
+                    sb.Append(" — handler: `").Append(handler).Append('`');
                 var s = Summary(e, DocId.ForEvent(e));
                 if (s != null) sb.Append(" — ").Append(s);
                 sb.AppendLine();
@@ -60,8 +69,7 @@ public sealed class EventsEnumsGenerator : DocGenerator
         sb.AppendLine("## Delegate types").AppendLine();
         foreach (var d in delegates)
         {
-            var invoke = d.Methods.FirstOrDefault(m => m.Name == "Invoke");
-            string sig = invoke != null ? SignatureFormatter.MethodSignature(invoke, withModifiers: false) : "Invoke(...)";
+            string sig = SignatureFormatter.DelegateHandler(d) ?? "(...)";
             sb.Append("- `").Append(SignatureFormatter.QualifiedFriendlyName(d)).Append("` : `").Append(sig).Append('`');
             var s = Summary(d, DocId.ForType(d));
             if (s != null) sb.Append(" — ").Append(s);

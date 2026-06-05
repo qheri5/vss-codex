@@ -15,6 +15,10 @@ public sealed class ApiReferenceGenerator : DocGenerator
 {
     private string? _decompiledRoot;  // <reference>/decompiled, for "view source" links (null = no links)
     private string _assembly = "";    // the decompiled assembly folder name (e.g. "VintagestoryAPI")
+    private bool _engineInternal;     // engine assemblies have no XML at all — skip the per-type badge
+
+    // Namespaces with at least this many types lead with a flat list of every type name (an overview).
+    private const int LargeNamespaceOverviewThreshold = 40;
 
     public ApiReferenceGenerator(XmlDocIndex xml, InheritDocResolver? inherit, string genDate)
         : base(xml, inherit, genDate) { }
@@ -23,6 +27,7 @@ public sealed class ApiReferenceGenerator : DocGenerator
     {
         string label = MarkdownWriter.AssemblyLabel(module);
         _decompiledRoot = decompiledRoot;
+        _engineInternal = engineInternal;
         _assembly = label.Split('.')[0];   // "VintagestoryAPI.dll v1.22.3" -> "VintagestoryAPI"
 
         var types = ApiSurface.PublicTypes(module, engineInternal).ToList();
@@ -44,7 +49,18 @@ public sealed class ApiReferenceGenerator : DocGenerator
                   .AppendLine("> engine assembly, not the modding contract; signatures only (no XML summaries).").AppendLine();
             sb.AppendLine($"[← index](INDEX.md) · {g.Count()} public types.").AppendLine();
 
-            foreach (var t in g.OrderBy(SignatureFormatter.QualifiedFriendlyName, StringComparer.Ordinal))
+            var ordered = g.OrderBy(SignatureFormatter.QualifiedFriendlyName, StringComparer.Ordinal).ToList();
+
+            // Big namespaces (Common ~489, Client ~290) are unscannable; lead with a one-line overview of
+            // every type name so the reader can find/Grep a name without paging through the whole file.
+            if (ordered.Count >= LargeNamespaceOverviewThreshold)
+            {
+                sb.AppendLine($"**Types in this namespace ({ordered.Count})** — " +
+                    string.Join(", ", ordered.Select(t => $"`{SignatureFormatter.QualifiedFriendlyName(t)}`")) + ".");
+                sb.AppendLine();
+            }
+
+            foreach (var t in ordered)
                 WriteType(sb, t);
 
             MarkdownWriter.Write(outDir, NamespaceFile(g.Key), sb.ToString());
@@ -66,7 +82,9 @@ public sealed class ApiReferenceGenerator : DocGenerator
         {
             int pct = types.Count == 0 ? 0 : (int)Math.Round(100.0 * documented / types.Count);
             idx.AppendLine($"**Summary coverage:** {documented} of {types.Count} public types carry an upstream XML " +
-                           $"summary ({pct}%); the rest are undocumented by VS itself (members may still inherit one).");
+                           $"summary ({pct}%); the rest are undocumented by VS itself (members may still inherit one). " +
+                           "Types with no summary are flagged **⚠ No official summary — signature-only**; for those, " +
+                           "read the decompiled source rather than guessing behavior from the name.");
             idx.AppendLine();
             idx.AppendLine("Cross-cutting indexes: [events.md](events.md) · [enums.md](enums.md). Engine internals: [lib/INDEX.md](lib/INDEX.md).");
         }
@@ -91,6 +109,9 @@ public sealed class ApiReferenceGenerator : DocGenerator
         sb.AppendLine($"```csharp\n{SignatureFormatter.TypeDeclaration(t)}\n```");
         string? sum = Summary(t, DocId.ForType(t));
         if (sum != null) sb.AppendLine().AppendLine(sum);
+        else if (!_engineInternal) sb.AppendLine().AppendLine(
+            "> ⚠ **No official summary** — signature-only. VS does not document this type; read the " +
+            "decompiled source for behavior (don't assume it from the name).");
         if (SourceLink(t) is string src) sb.AppendLine().AppendLine($"[view decompiled source]({src})");
         sb.AppendLine();
 
