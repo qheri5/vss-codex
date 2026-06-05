@@ -8,6 +8,7 @@ public sealed class Options
     public string? Zip;
     public string? Out;
     public bool SkipDecompile;
+    public bool NoSite;
 }
 
 /// <summary>
@@ -29,7 +30,7 @@ public static class Pipeline
             string genRoot = Path.Combine(refDir, "docs", "generated");
             string skillOut = Path.Combine(outDir, ".claude", "skills", "vss");
 
-            int total = o.SkipDecompile ? 2 : 3, step = 0;
+            int total = (o.SkipDecompile ? 2 : 3) + (o.NoSite ? 0 : 1), step = 0;
             var runTimer = Stopwatch.StartNew();
 
             void DoStep(string msg, Action body)
@@ -60,11 +61,21 @@ public static class Pipeline
                 SkillRenderer.Render(contentDir, info, refDir, skillOut);
             });
 
+            // The browsable site is additive and depends only on the markdown above; MkDocsSite swallows
+            // its own errors (missing Python etc.), so a failure here never fails the overall run.
+            bool siteBuilt = false;
+            if (!o.NoSite)
+                DoStep("build the searchable Material site (MkDocs)", () => siteBuilt = MkDocsSite.Build(refDir, info));
+
             Banner($"DONE  -  VS {info.VsVersion}  -  total {runTimer.Elapsed.TotalSeconds:n1}s");
             Console.WriteLine($"  API     : {info.ApiTypes} types / {info.ApiNamespaces} ns, {info.CoveragePct}% documented");
             Console.WriteLine($"  Indexes : {info.Events} events, {info.Enums} enums, {info.LibTypes} engine types");
             Console.WriteLine($"  Knowledge base -> {refDir}");
             Console.WriteLine($"  Skill          -> {skillOut}  (copy into a project's .claude/skills/ to use it)");
+            // Only advertise the site (and a path to cd into) when it was actually produced; a graceful
+            // skip already printed its own note above.
+            if (siteBuilt)
+                Console.WriteLine($"  Site           -> {Path.Combine(refDir, "site")}  (serve it: python -m http.server in that dir)");
             return 0;
         }
         catch (Exception ex)

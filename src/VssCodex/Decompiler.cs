@@ -81,7 +81,7 @@ public static class Decompiler
     private static string EnsureIlspycmd()
     {
         string exe = OperatingSystem.IsWindows() ? "ilspycmd.exe" : "ilspycmd";
-        if (FindOnPath(exe) is string onPath) return onPath;
+        if (ProcessUtil.FindOnPath(exe) is string onPath) return onPath;
 
         string toolsDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", "tools");
@@ -95,17 +95,7 @@ public static class Decompiler
         try { using var p = Process.Start(psi); p!.WaitForExit(); } catch { }
 
         if (File.Exists(toolPath)) return toolPath;
-        if (FindOnPath(exe) is string p2) return p2;
+        if (ProcessUtil.FindOnPath(exe) is string p2) return p2;
         throw new Exception("ilspycmd not found and auto-install failed; install it with: dotnet tool install --global ilspycmd");
-    }
-
-    private static string? FindOnPath(string exe)
-    {
-        foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
-        {
-            if (string.IsNullOrWhiteSpace(dir)) continue;
-            try { string c = Path.Combine(dir, exe); if (File.Exists(c)) return c; } catch { }
-        }
-        return null;
     }
 }

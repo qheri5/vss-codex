@@ -4,6 +4,22 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
+## [1.1.0] - 2026-06-05
+
+### Added
+- Browsable site — the knowledge base is now also rendered as an ordered, searchable static site with
+  [MkDocs](https://www.mkdocs.org) + the Material theme, written to `out/reference/site/`. It is built
+  by the real MkDocs (the tool only generates `mkdocs.yml` and runs `mkdocs build` as a subprocess —
+  nothing is reimplemented). Browse it offline by serving the folder, e.g. `python -m http.server`.
+- MkDocs + `mkdocs-material` are auto-installed into a cached per-user virtualenv on first run. The
+  step is **optional and non-fatal**: if Python 3 is unavailable it is skipped with a clear note, and
+  the markdown knowledge base and skill (the core output) are produced regardless.
+- `--no-site` — skip building the site (the markdown is still produced).
+
+### Notes
+- The site is derived from the same proprietary-binary output, so it also lives under the gitignored
+  `out/` tree — keep it local, do not redistribute.
+
 ## [1.0.0] - 2026-06-05
 
 First public release.

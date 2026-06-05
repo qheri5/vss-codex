@@ -12,8 +12,8 @@ knowledge base — the full API, an events/enums index, the engine internals, an
 Harmony-patchable method — for whatever game version you point it at. One command; re-run it on each
 update.
 
-The result is markdown you can read directly, or hand to an AI assistant as a Claude Code skill so it
-answers about the real API instead of guessing.
+The result is markdown you can read directly, browse as an ordered, searchable local site, or hand to
+an AI assistant as a Claude Code skill so it answers about the real API instead of guessing.
 
 > ## ⚠️ Proprietary game content
 > `vss-codex` decompiles Vintage Story's **copyrighted binaries on your own machine**, and the
@@ -51,6 +51,8 @@ out/reference/decompiled/   …/docs/generated/   out/.claude/skills/vss/
    reference, events/enums indexes, an engine-internals surface, the Harmony patchability catalog,
    and a version-diff CHANGELOG.
 3. **Install** the curated notes and render the `vss` skill.
+4. **Build** an ordered, searchable site from those docs with MkDocs + Material (run as a subprocess).
+   Optional: skipped with a note if Python 3 isn't available, or with `--no-site`.
 
 One cross-platform process (no PowerShell), idempotent — rebuild against a new game version any time.
 
@@ -71,6 +73,9 @@ dotnet run --project src/VssCodex -- --install <vs-install-dir> --out <output-di
 
 # Reuse the existing decompiled tree (skip step 01) for fast doc/skill iteration
 dotnet run --project src/VssCodex -- --skip-decompile
+
+# Skip the browsable site (e.g. on a box without Python)
+dotnet run --project src/VssCodex -- --no-site
 ```
 
 **Converter mode** (`--zip`) is the zero-setup path: download an official server build (e.g. from
@@ -80,6 +85,9 @@ client-only assemblies; those are skipped cleanly.
 
 **Requirements:** the .NET 10 SDK (`dotnet`) and `ilspycmd` (auto-installed as a global tool). You need
 either a local VS install or a VS archive — the binaries and `VintagestoryAPI.xml` are read directly.
+The browsable site additionally needs **Python 3** (with `venv`; on Debian/Ubuntu install
+`python3-venv`); `mkdocs-material` is auto-installed into a cached per-user virtualenv on first run.
+Without Python the site is skipped gracefully — everything else still builds — or opt out with `--no-site`.
 **Runs on Windows, Linux, and macOS** — there's no PowerShell or shell-specific code. On Linux/macOS,
 point it at the game with `--install`/`--zip` or the `VINTAGE_STORY` environment variable (on Windows it
 defaults to `%APPDATA%\Vintagestory`). Tested end-to-end across Vintage Story **1.20–1.22**.
@@ -97,12 +105,16 @@ committed):
 out/
 ├── reference/                  the knowledge base
 │   ├── decompiled/             the VS-authored assemblies (ILSpy output)
-│   └── docs/
-│       ├── README.md, entity-simulation.md   curated notes
-│       └── generated/          api/ (endpoints + events.md + enums.md + lib/), harmony/
-│                               (✓/✗ patchable catalog + curated hotspots), CHANGELOG-*.md
+│   ├── docs/
+│   │   ├── README.md, entity-simulation.md   curated notes
+│   │   └── generated/          api/ (endpoints + events.md + enums.md + lib/), harmony/
+│   │                           (✓/✗ patchable catalog + curated hotspots), CHANGELOG-*.md
+│   └── site/                   the same docs as an ordered, searchable MkDocs site (open index.html)
 └── .claude/skills/vss/         the rendered Claude Code skill
 ```
+
+To browse the site, serve it locally (Material's search needs HTTP, not `file://`):
+`cd out/reference/site && python -m http.server`, then open <http://localhost:8000>.
 
 ### Using the skill
 

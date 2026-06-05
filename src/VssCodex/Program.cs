@@ -13,6 +13,7 @@ for (int i = 0; i < args.Length; i++)
         case "--zip" or "-z" when i + 1 < args.Length: o.Zip = args[++i]; break;
         case "--out" or "-o" when i + 1 < args.Length: o.Out = args[++i]; break;
         case "--skip-decompile" or "-s": o.SkipDecompile = true; break;
+        case "--no-site": o.NoSite = true; break;
         case "--help" or "-h": PrintHelp(); return 0;
         default:
             Console.Error.WriteLine($"unknown or incomplete argument: {args[i]}");
@@ -34,9 +35,12 @@ static void PrintHelp()
           --zip,     -z <file>  a VS server/client .zip or .tar.gz to extract and use
           --out,     -o <dir>   output dir (default: ./out)
           --skip-decompile, -s  reuse the existing decompiled tree (faster doc/skill iteration)
+          --no-site             skip building the browsable MkDocs site (the markdown is still produced)
           --help,    -h         this help
 
         Output (gitignored): <out>/reference/ (the knowledge base) and <out>/.claude/skills/vss/.
         Requires the .NET SDK and ilspycmd (auto-installed). Runs on Windows, Linux, and macOS.
+        The browsable site additionally needs Python 3 + mkdocs-material (auto-installed into a cached
+        venv on first run); it is skipped gracefully if Python is unavailable, or with --no-site.
         """);
 }
