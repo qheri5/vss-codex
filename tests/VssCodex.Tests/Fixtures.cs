@@ -38,6 +38,18 @@ public class Outer
     public class Inner { }
 }
 
+// Delegate fixtures for the events-doc handler rendering (resolvable within this module).
+public delegate bool SampleDelegate(int code, string name);
+public delegate void VoidDelegate(string msg);
+public delegate T GenDelegate<T>(T input, int n);
+
+public class GenEventHost
+{
+#pragma warning disable CS0067 // read via Cecil metadata, never invoked
+    public event GenDelegate<string>? OnGen; // closed generic instance: handler should read (string input, int n)
+#pragma warning restore CS0067
+}
+
 public abstract class AbstractFixture
 {
     public abstract void DoAbstract();

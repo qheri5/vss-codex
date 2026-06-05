@@ -42,7 +42,7 @@ and *how to read it* — it never edits anything.
 | **Engine internals** (`VintagestoryLib` public types: ServerMain, PhysicsManager…) | `docs/generated/api/lib/INDEX.md` |
 | **Harmony catalog** (every method ✓/✗ patchable) | `docs/generated/harmony/INDEX.md` → `patchable-<assembly>.md` |
 | **Harmony hotspots** (curated, server-perf) | `docs/generated/harmony/high-value-targets.md` |
-| **Version diff** (after a VS update) | `docs/generated/CHANGELOG-<old>-to-<new>.md` |
+| **Version diff** — present only after ≥2 VS builds; absent on a fresh single-version base | `docs/generated/CHANGELOG-<old>-to-<new>.md` |
 | **Raw decompiled source** (ground truth) | `decompiled/<assembly>/<namespace-as-folders>/<Type>.cs` |
 | **Skill how-tos** | `references/` (this skill) |
 | **Code examples** | `examples/` (this skill) |
@@ -52,7 +52,9 @@ and *how to read it* — it never edits anything.
 1. **"What does API X do / what's its signature?"** → Grep `docs/generated/api/` (official +
    inherited summaries). Don't read the whole namespace file — Grep the type name.
 2. **"What event do I subscribe to?" / "what are the values of enum Z?"** → `api/events.md` /
-   `api/enums.md` (consolidated; faster than hunting per-type).
+   `api/enums.md` (consolidated; faster than hunting per-type). Each event lists its **handler:**
+   signature; the same name can exist on both sides — match the section's namespace
+   (`…API.Client` vs `…API.Server`) to your side.
 3. **"How does the engine actually do Y (tick, spawn, save, light)?"** → start with the hand notes
    (`docs/entity-simulation.md`); for the engine type surface use `api/lib/`, then the raw source
    under `decompiled/VintagestoryLib/Vintagestory.Server/`.
@@ -75,6 +77,25 @@ See `references/search-strategy.md` for concrete Grep/Glob recipes.
   version-fragile. (Example: keep chunks loaded with the native `WorldManager.LoadChunkColumn` call,
   or force entity activity via the public `AlwaysActive` property, instead of patching.)
 - Cite sources as `assembly/path:line` so they're clickable.
+- **Don't fabricate — cite or defer.** This base is the decompiled engine plus official API summaries.
+  Every concrete claim (a method, a field, a JSON key, a default value) must be backed by a `path:line`
+  from the reference; if you can't find it, say *not found here* — don't invent it. A *signature* in the
+  API doc is not behavior (see the ⚠ signature-only flag): give the shape, then read the decompiled `.cs`.
+- **Thin / out-of-scope topics — point, don't guess.** Some real modding areas are barely or not covered
+  by this base: **content & assets (JSON blocktypes/itemtypes/recipes/lang, asset layout)**, **GUI /
+  rendering / shaders**, **worldgen**, **networking / packets**, and **trading**. For these, give what
+  the base *does* hold (the relevant decompiled type or `references/mod-setup.md` for asset layout) and
+  send the user to the **official wiki (wiki.vintagestory.at)** — never improvise a JSON schema, recipe
+  format, or tutorial you cannot cite from here.
+- **Search before you deny.** Before answering *not found* (or "type X can't do Y"), Grep the bare
+  symbol name across all of `api/` and `decompiled/`, and check the **aggregate** `ICoreServerAPI` /
+  `ICoreClientAPI` (and their sub-APIs) — not just one named interface. The capability may exist under
+  another name or owner (e.g. `Vec3d.RotatedCopy(yaw)` despite no `Vec3d.RotateY`). See
+  `references/search-strategy.md`.
+- **Quote exact logic, don't paraphrase it.** For bitwise / numeric / threshold / conditional engine
+  behavior, cite the actual code expression (e.g. the shift `(value << 5) | (hue << 10)` or a `< 2`
+  bound), not a reworded summary — paraphrase drifts (off-by-one bit ranges, wrong radius, dropped
+  conditional branches). And cite the member's own declaration line, not the attribute/`///` above it.
 
 ## Reference files in this skill
 

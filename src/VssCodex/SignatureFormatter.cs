@@ -110,6 +110,34 @@ public static class SignatureFormatter
         return $"{mod}event {TypeName(e.EventType)} {e.Name}";
     }
 
+    /// <summary>
+    /// The handler shape a delegate type expects — "(IServerPlayer byPlayer)" for a void delegate, or
+    /// "bool (Entity entity)" when it returns a value. Returns null if the type can't be resolved or
+    /// isn't a delegate. Lets the events doc show the parameters to write inline, without making the
+    /// reader cross-reference the delegate-types section.
+    /// </summary>
+    public static string? DelegateHandler(TypeReference delegateType)
+    {
+        var def = delegateType.Resolve();
+        var invoke = def?.Methods.FirstOrDefault(m => m.Name == "Invoke");
+        if (invoke == null) return null;
+
+        // For a closed generic delegate (Action<int>, Action<ActiveSlotChangeEventArgs>), Invoke's
+        // parameters reference the open type parameters (T); substitute the instance's actual arguments
+        // so the handler reads "(int obj)" rather than "(T obj)".
+        var args = (delegateType as GenericInstanceType)?.GenericArguments;
+        TypeReference Subst(TypeReference t) =>
+            args != null && t is GenericParameter gp && gp.Position < args.Count ? args[gp.Position] : t;
+
+        string ps = string.Join(", ", invoke.Parameters.Select(p =>
+        {
+            string prefix = p.ParameterType is ByReferenceType ? (p.IsOut ? "out " : p.IsIn ? "in " : "ref ") : "";
+            return prefix + TypeName(Subst(p.ParameterType)) + " " + p.Name;
+        }));
+        string ret = TypeName(Subst(invoke.ReturnType));
+        return ret == "void" ? $"({ps})" : $"{ret} ({ps})";
+    }
+
     private static string Parameter(ParameterDefinition pd)
     {
         var sb = new StringBuilder();

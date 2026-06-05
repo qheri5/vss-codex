@@ -57,7 +57,7 @@ assets/<modid>/
 ├── blocktypes/   <name>.json   (a code-mod block sets "class" + "entityClass" to your registered names)
 ├── itemtypes/    <name>.json
 ├── recipes/      grid/, smithing/, …
-├── lang/         en.json       (display names: "block-<modid>:<name>": "…")
+├── lang/         en.json       (display names: "<modid>:block-<name>": "…"; "game" domain may omit the prefix → "block-<name>")
 ├── textures/     block/, item/ (PNG)
 └── shapes/       block/, item/ (JSON shapes)
 ```

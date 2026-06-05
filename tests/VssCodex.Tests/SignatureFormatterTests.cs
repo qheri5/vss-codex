@@ -142,4 +142,24 @@ public class SignatureFormatterTests
         var e = TestModule.Event("Members", "Ping");
         Assert.Equal("static event System.Action Ping", SignatureFormatter.EventSignature(e));
     }
+
+    [Fact]
+    public void Delegate_handler_nonvoid_shows_return_and_params()
+    {
+        Assert.Equal("bool (int code, string name)",
+            SignatureFormatter.DelegateHandler(TestModule.Type("SampleDelegate")));
+    }
+
+    [Fact]
+    public void Delegate_handler_void_shows_params_only()
+    {
+        Assert.Equal("(string msg)", SignatureFormatter.DelegateHandler(TestModule.Type("VoidDelegate")));
+    }
+
+    [Fact]
+    public void Delegate_handler_substitutes_closed_generic_arguments() // regression: not "(T input...)"
+    {
+        var e = TestModule.Event("GenEventHost", "OnGen"); // event of type GenDelegate<string>
+        Assert.Equal("string (string input, int n)", SignatureFormatter.DelegateHandler(e.EventType));
+    }
 }

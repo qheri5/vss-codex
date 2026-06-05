@@ -65,7 +65,10 @@ Attach data with `WatchedAttributes` (synced) / `Attributes` (server-only); both
 ## When to use the generated API doc vs raw source
 
 - **API doc** (`docs/generated/api/`): signatures + official summaries — fastest for "what's the
-  method / what does it mean".
+  method / what does it mean". Only ~37% of public types carry an official summary; a type flagged
+  **⚠ No official summary — signature-only** has none. For those, the doc gives you the *shape* (the
+  signature) but **not** the behavior — say so and read the decompiled `.cs` instead of inferring
+  meaning from the name. "Has a signature" is not "is documented".
 - **Raw decompiled** (`decompiled/`): when you need the actual implementation, default values,
   call sites, or exact behavior. The API doc only covers `VintagestoryAPI.dll` (the public contract);
   engine internals (ServerMain, PhysicsManager, server systems) live in `VintagestoryLib` and are
