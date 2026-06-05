@@ -4,7 +4,7 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
-## [Unreleased]
+## [1.2.0] - 2026-06-05
 
 ### Fixed
 - Cap the one-off `dotnet tool install` for `ilspycmd` with a timeout so a stalled NuGet restore can no
