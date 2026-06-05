@@ -5,9 +5,11 @@ using VssCodex;
 // OUTPUT is derived from proprietary binaries and is written only into the gitignored out/ tree.
 
 var (o, exitCode) = Options.Parse(args);
-if (exitCode is int code) { PrintHelp(); return code; }
+if (exitCode is int code) { PrintHelp(); ConsoleExit.PauseIfLaunchedByDoubleClick(); return code; }
 
-return Pipeline.Run(o);
+int rc = Pipeline.Run(o);
+ConsoleExit.PauseIfLaunchedByDoubleClick();
+return rc;
 
 static void PrintHelp()
 {

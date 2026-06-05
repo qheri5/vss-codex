@@ -4,6 +4,19 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
+## [1.2.1] - 2026-06-05
+
+### Fixed
+- When the prebuilt `.exe` is launched by double-clicking it on Windows, wait for Enter before exiting
+  so the console output (and any error) stays readable instead of the window vanishing. No-op when run
+  from a shell, when output is piped, or on other platforms.
+
+### Added
+- The site step now writes `serve-docs.cmd` / `serve-docs.sh` into `out/reference/site/`: double-click
+  to serve the docs and open them at `http://localhost:8000`. This is how the Material **search** works
+  — it loads its index over HTTP and can't run from a `file://` page (opening `index.html` directly
+  shows the pages but no working search).
+
 ## [1.2.0] - 2026-06-05
 
 ### Fixed

@@ -113,8 +113,9 @@ out/
 └── .claude/skills/vss/         the rendered Claude Code skill
 ```
 
-To browse the site, serve it locally (Material's search needs HTTP, not `file://`):
-`cd out/reference/site && python -m http.server`, then open <http://localhost:8000>.
+To browse the site, **double-click `serve-docs.cmd` (Windows) or `serve-docs.sh` (Linux/macOS)** in
+`out/reference/site/` — it serves the folder and opens it at <http://localhost:8000>. Serving is
+required because Material's search loads its index over HTTP and can't run from a `file://` page.
 
 ### Using the skill
 
