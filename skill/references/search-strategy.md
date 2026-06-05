@@ -51,6 +51,32 @@ assembly:
 in `decompiled/VintagestoryLib/Vintagestory.Server/` to find tick entry points and what the engine
 already profiles.
 
+## Before you conclude "not found" (avoid false negatives)
+
+A symbol you don't see in the first file may still exist elsewhere. Before saying *not found* — or
+asserting a type "can't do X" — do a repo-wide check:
+- `Grep` the bare symbol name across **all** of `docs/generated/api/` AND `decompiled/`, not just the
+  one type/interface you started in.
+- For a server/client capability, check the **aggregate** interface `ICoreServerAPI` / `ICoreClientAPI`
+  *and* their sub-APIs (`World`, `Event`, `Gui`, `Network`, …) — e.g. `BroadcastMessageToAllGroups`
+  lives on the aggregate `ICoreServerAPI`, not the small `IServerAPI` sub-interface; `RegisterDialog`
+  is on `IGuiAPI`, not `ICoreClientAPI` directly.
+- A missing *exact name* is not a missing *capability*: there is no `Vec3d.RotateY`, but
+  `Vec3d.RotatedCopy(yaw)` exists — search the concept, not only your guessed name.
+Report `not_found` only once the bare name returns nothing repo-wide.
+
+## Cite the exact member line
+
+When you cite `path:line`, point at the **declaration line of the member itself**, not the
+`[Obsolete]` / `[JsonIgnore]` / `[DocumentAsJson]` attribute or the `///` doc line just above it (those
+sit a few lines higher). Open the file and confirm the cited line holds the signature you claim.
+
+## Watch for [Obsolete] before recommending
+
+- The generated API doc prefixes deprecated members with `⚠️ [Obsolete]` — check for it.
+- When you read a member straight from `decompiled/`, scan the lines just above it for an
+  `[Obsolete(...)]` attribute before recommending it; deprecated overloads usually forward to a newer one.
+
 ## Tips
 
 - The generated docs are large per-namespace/per-assembly files — **Grep, don't Read** them whole.

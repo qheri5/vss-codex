@@ -87,6 +87,15 @@ See `references/search-strategy.md` for concrete Grep/Glob recipes.
   the base *does* hold (the relevant decompiled type or `references/mod-setup.md` for asset layout) and
   send the user to the **official wiki (wiki.vintagestory.at)** — never improvise a JSON schema, recipe
   format, or tutorial you cannot cite from here.
+- **Search before you deny.** Before answering *not found* (or "type X can't do Y"), Grep the bare
+  symbol name across all of `api/` and `decompiled/`, and check the **aggregate** `ICoreServerAPI` /
+  `ICoreClientAPI` (and their sub-APIs) — not just one named interface. The capability may exist under
+  another name or owner (e.g. `Vec3d.RotatedCopy(yaw)` despite no `Vec3d.RotateY`). See
+  `references/search-strategy.md`.
+- **Quote exact logic, don't paraphrase it.** For bitwise / numeric / threshold / conditional engine
+  behavior, cite the actual code expression (e.g. the shift `(value << 5) | (hue << 10)` or a `< 2`
+  bound), not a reworded summary — paraphrase drifts (off-by-one bit ranges, wrong radius, dropped
+  conditional branches). And cite the member's own declaration line, not the attribute/`///` above it.
 
 ## Reference files in this skill
 
