@@ -4,6 +4,16 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
+## [1.2.2] - 2026-06-05
+
+### Changed
+- Quieter, cleaner console: drop the redundant `steps : N` line from the startup banner, and capture
+  `mkdocs build` output — show it only if the build fails. On success this hides MkDocs' INFO chatter
+  and the upstream Material-for-MkDocs "MkDocs 2.0" advocacy banner (an informational notice from the
+  theme authors, not an error; the tool pins a known-good `mkdocs-material` and is unaffected).
+- README: make the `serve-docs.cmd` / `serve-docs.sh` one-click browse step prominent (don't open
+  `index.html` directly — the search needs the local server).
+
 ## [1.2.1] - 2026-06-05
 
 ### Fixed

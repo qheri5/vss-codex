@@ -46,8 +46,15 @@ public static class MkDocsSite
 
             string siteDir = Path.Combine(refDir, "site");
             Console.WriteLine("  building the Material site (mkdocs build) ...");
-            int exit = ProcessUtil.Run(mkdocs, ["build", "-f", cfg, "-d", siteDir, "--clean"], BuildTimeoutMs, refDir);
-            if (exit != 0) { Note($"mkdocs build exited {exit} - the site may be incomplete."); return false; }
+            // Capture mkdocs' chatter (incl. Material's upstream MkDocs-2.0 advocacy banner) and only show
+            // it if the build actually fails - keep a clean console on success.
+            var (exit, output) = ProcessUtil.RunCaptured(mkdocs, ["build", "-f", cfg, "-d", siteDir, "--clean"], BuildTimeoutMs, refDir);
+            if (exit != 0)
+            {
+                Console.Error.WriteLine(output);
+                Note($"mkdocs build exited {exit} - the site may be incomplete.");
+                return false;
+            }
 
             WriteServeScripts(siteDir);
             Console.WriteLine($"  site built -> {siteDir}");
