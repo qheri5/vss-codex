@@ -12,6 +12,13 @@ update.
 The result is markdown you can read directly, or hand to an AI assistant as a Claude Code skill so it
 answers about the real API instead of guessing.
 
+> ## ⚠️ Proprietary game content
+> `vss-codex` decompiles Vintage Story's **copyrighted binaries on your own machine**, and the
+> reference it produces is **derived from those proprietary game files**. Keep that output **local**:
+> don't modify it, and **don't publish or redistribute** it (or any decompiled source). This repository
+> ships **no game code** — it is a **development aid** for building mods and tools *for* Vintage Story,
+> and nothing more. You need a legally obtained copy of the game to run it.
+
 ## Who it's for
 
 - **Modders & tool developers** → the **knowledge base** is a searchable reference for the whole API,
