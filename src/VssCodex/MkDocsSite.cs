@@ -49,8 +49,10 @@ public static class MkDocsSite
             int exit = ProcessUtil.Run(mkdocs, ["build", "-f", cfg, "-d", siteDir, "--clean"], BuildTimeoutMs, refDir);
             if (exit != 0) { Note($"mkdocs build exited {exit} - the site may be incomplete."); return false; }
 
+            WriteServeScripts(siteDir);
             Console.WriteLine($"  site built -> {siteDir}");
-            Console.WriteLine($"  browse offline:  cd \"{siteDir}\"  then  python -m http.server   (open http://localhost:8000)");
+            Console.WriteLine($"  browse it:  double-click {(OperatingSystem.IsWindows() ? "serve-docs.cmd" : "serve-docs.sh")} in that folder");
+            Console.WriteLine($"             (opens http://localhost:8000 - the search needs the local server, it can't run from file://)");
             return true;
         }
         catch (Exception ex)
@@ -105,6 +107,36 @@ public static class MkDocsSite
             if (ProcessUtil.FindOnPath(exe) is string p) return (p, prefix);
         }
         return null;
+    }
+
+    // One-double-click launchers so a human can browse the served site (Material's search needs HTTP,
+    // not file://). Both are written regardless of OS; the user runs the one for their platform.
+    private static void WriteServeScripts(string siteDir)
+    {
+        try
+        {
+            File.WriteAllText(Path.Combine(siteDir, "serve-docs.cmd"),
+                "@echo off\r\n" +
+                "rem Serve the offline docs and open them - Material's search needs HTTP, not file://.\r\n" +
+                "cd /d \"%~dp0\"\r\n" +
+                "start \"\" http://localhost:8000/\r\n" +
+                "python -m http.server 8000\r\n");
+
+            string sh =
+                "#!/usr/bin/env sh\n" +
+                "# Serve the offline docs and open them - Material's search needs HTTP, not file://.\n" +
+                "cd \"$(dirname \"$0\")\"\n" +
+                "( sleep 1; (xdg-open http://localhost:8000/ 2>/dev/null || open http://localhost:8000/ 2>/dev/null) ) &\n" +
+                "python3 -m http.server 8000\n";
+            string shPath = Path.Combine(siteDir, "serve-docs.sh");
+            File.WriteAllText(shPath, sh);
+            if (!OperatingSystem.IsWindows())
+                try { File.SetUnixFileMode(shPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                                                  | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+                                                  | UnixFileMode.OtherRead | UnixFileMode.OtherExecute); }
+                catch { }
+        }
+        catch { /* best-effort convenience scripts */ }
     }
 
     private static void Note(string msg) => Console.WriteLine($"  note: {msg}");

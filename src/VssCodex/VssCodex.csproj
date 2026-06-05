@@ -14,7 +14,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>vss-codex</AssemblyName>
     <RootNamespace>VssCodex</RootNamespace>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <Description>Generate a complete, always-current Vintage Story modding reference (API, Harmony catalog, events/enums, engine internals) and a Claude Code skill, straight from the game binaries.</Description>
     <Authors>qheri5</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

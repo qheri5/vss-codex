@@ -66,7 +66,7 @@ public static class Pipeline
             // Only advertise the site (and a path to cd into) when it was actually produced; a graceful
             // skip already printed its own note above.
             if (siteBuilt)
-                Console.WriteLine($"  Site           -> {Path.Combine(refDir, "site")}  (serve it: python -m http.server in that dir)");
+                Console.WriteLine($"  Site           -> {Path.Combine(refDir, "site")}  (browse it: double-click serve-docs.{(OperatingSystem.IsWindows() ? "cmd" : "sh")} there)");
             return 0;
         }
         catch (Exception ex)
