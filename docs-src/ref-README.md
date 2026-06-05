@@ -1,24 +1,23 @@
 # VS Game Reference — decompiled engine + knowledge base
 
-> **⚠️ PROPRIETARY — DO NOT COMMIT, DO NOT REDISTRIBUTE.**
-> This folder contains decompiled Vintage Story binaries and docs derived from them. It exists only
-> as a local reference. It is gitignored (`.gitignore = *`) and lives in the workspace container,
-> which is not a git repo. Never push it anywhere.
+> **⚠️ DERIVED FROM PROPRIETARY GAME BINARIES — DO NOT COMMIT OR REDISTRIBUTE.**
+> This folder contains decompiled Vintage Story binaries and docs derived from them. It exists only as
+> a local reference. It lives under the gitignored `out/` folder. Never push it anywhere.
 
 ## What this is
 
-The **game-understanding base**, **produced by the `vss-codex` repo**. Don't edit it by hand — it is
-rebuilt from a VS install by one command:
+The **game-understanding base**, produced by **`vss-codex`**. Don't edit it by hand — it is rebuilt
+from a VS install by one command (from the `vss-codex` repo):
 
 ```powershell
-..\vss-codex\vss-codex.ps1            # full rebuild (decompile + generate + install)
-..\vss-codex\vss-codex.ps1 -SkipDecompile   # docs/skill only (reuse existing decompiled tree)
+./vss-codex.ps1                 # full rebuild (decompile + generate + render skill)
+./vss-codex.ps1 -SkipDecompile  # docs/skill only (reuse existing decompiled tree)
 ```
 
 ## Contents
 
 ```
-vs-game-reference/
+reference/
 ├── README.md              ← you are here (installed from vss-codex/docs-src/ref-README.md)
 ├── decompiled/            raw ILSpy output, one folder per VS-authored assembly
 └── docs/

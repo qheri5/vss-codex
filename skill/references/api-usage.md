@@ -1,8 +1,8 @@
 # VS API — how to use it
 
 How a Vintage Story mod plugs into the engine. Look types up in
-`vs-game-reference/docs/generated/api/`; read ground truth in
-`vs-game-reference/decompiled/VintagestoryAPI/`.
+`docs/generated/api/`; read ground truth in
+`decompiled/VintagestoryAPI/`.
 
 ## A mod = a `ModSystem` (plus optional content)
 

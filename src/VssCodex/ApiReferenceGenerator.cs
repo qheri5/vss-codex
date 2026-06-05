@@ -88,7 +88,7 @@ public sealed class ApiReferenceGenerator
         }
         idx.AppendLine();
         idx.AppendLine("One file per namespace. A type's full source is at");
-        idx.AppendLine($"`vs-game-reference/decompiled/{label.Split('.')[0]}/<namespace-as-folders>/<Type>.cs`.");
+        idx.AppendLine($"`decompiled/{label.Split('.')[0]}/<namespace-as-folders>/<Type>.cs` (under the reference root).");
         idx.AppendLine();
         idx.AppendLine("| Namespace | Types | File |");
         idx.AppendLine("|---|--:|---|");

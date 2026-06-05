@@ -37,7 +37,7 @@ body and is patchable.
   take effect; verify with `Harmony.GetPatchInfo(method)` or a log in the patch.
 
 Check the flag before writing the patch: Grep the method in
-`vs-game-reference/docs/generated/harmony/patchable-<assembly>.md`.
+`docs/generated/harmony/patchable-<assembly>.md`.
 
 ## Bootstrap idiom (in your `ModSystem`)
 
@@ -76,7 +76,7 @@ Patches are declared with attributes (`[HarmonyPatch(typeof(T), "Method")]` + `[
 
 ## For server performance work
 
-Start from `vs-game-reference/docs/generated/harmony/high-value-targets.md` (curated hotspots:
+Start from `docs/generated/harmony/high-value-targets.md` (curated hotspots:
 `TickEntities`, `EntityBehaviorTaskAI.OnGameTick`, `UpdateTrackedEntityState`, `SpawnReadyMobs`,
 `AStar.FindPathOrEscapePath`, …) and the mechanism write-up in `docs/entity-simulation.md`. Measure
 with the engine's `FrameProfiler` (most hot paths are already bracketed with `FrameProfiler.Enter`).

@@ -1,7 +1,7 @@
 # Architecture
 
-`vss-codex` has four cooperating parts. The **generator** extracts data; the **formatter**
-orchestrates and installs; the **skill** and **MCP** are what gets installed/used.
+`vss-codex` has three cooperating parts. The **generator** extracts data; the **formatter**
+orchestrates the pipeline; the **skill** is the consumable output.
 
 ## 1. Generator — `src/VssCodex/` (C#, Mono.Cecil)
 
@@ -26,22 +26,18 @@ It takes `--install <VS dir> --out <generated dir>` and is **pure**: same inputs
 
 ## 2. Formatter — `vss-codex.ps1` + `steps/`
 
-The orchestrator. It resolves the VS install and the workspace container, then runs four steps
-(decompile → generate → install docs+skill → scaffold MCP), each an independently-runnable
+The orchestrator. It resolves the VS install and the output dir (`-Out`, default `out/`), then runs
+three steps (decompile → generate → install docs + render skill), each an independently-runnable
 `steps/NN-*.ps1`. It reads `build-info.json` to render the skill template and print a summary.
-**Install-in-place:** output lands in `vs-game-reference/`, the skill in `.claude/skills/vss/`, the
-MCP example at the container root.
+**Self-contained output:** everything lands under the gitignored `out/` — the reference in
+`out/reference/`, the rendered skill in `out/.claude/skills/vss/`.
 
-## 3. Skill — `skill/` → `.claude/skills/vss/`
+## 3. Skill — `skill/` → `out/.claude/skills/vss/`
 
 A lookup skill (Read/Glob/Grep only). `SKILL.md.template` carries `{{PLACEHOLDERS}}` the formatter
-fills from `build-info.json` (version, type counts, coverage). `references/` and `examples/` are
-copied verbatim. The installed copy is *output*; the source of truth is here.
-
-## 4. MCP — `mcp/`
-
-Scaffold + design doc for an MCP server that drives a live VS server (A1: SSH + console + logs;
-A2: telemetry mod). Stub tools today. See `mcp/README.md`.
+fills from `build-info.json` (version, type counts, coverage) and the absolute reference path. The
+`references/` and `examples/` are copied verbatim. The rendered copy is *output*; the source of truth
+is here. To use it, copy `out/.claude/skills/vss/` into a Claude Code project's `.claude/skills/`.
 
 ## Data flow & the committable/proprietary boundary
 
@@ -49,15 +45,15 @@ A2: telemetry mod). Stub tools today. See `mcp/README.md`.
 VS install (binaries + .xml)
       │  01 ilspycmd                    02 VssCodex (Mono.Cecil + .xml)
       ▼                                  ▼
-vs-game-reference/decompiled/  ──►  vs-game-reference/docs/generated/ + build-info.json
-      │                                  │ 03 render template + copy curated docs
+out/reference/decompiled/  ──►  out/reference/docs/generated/ + build-info.json
+      │                                  │ 03 render skill + copy curated docs
       │                                  ▼
-      └────────────────────────►  vs-game-reference/docs/ + .claude/skills/vss/
+      └────────────────────────►  out/reference/docs/ + out/.claude/skills/vss/
 ```
 
-- **Committable (this repo):** generator code, formatter, skill source, curated-doc source, MCP.
-  Contains **zero verbatim decompiled code** — curated docs use `file:line` + prose.
-- **Proprietary (gitignored, `../vs-game-reference/`):** decompiled code + generated docs +
+- **Committable (this repo):** generator code, formatter, skill source, curated-doc source. Contains
+  **zero verbatim decompiled code** — curated docs use `file:line` + prose.
+- **Output (gitignored, `out/`):** decompiled code + generated docs + the rendered skill +
   `build-info.json` + `.snapshot-*.json`. Never committed.
 
 ## Key design decisions

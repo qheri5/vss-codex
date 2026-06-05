@@ -1,6 +1,6 @@
 # Reference map — subsystem → decompiled path
 
-Where each subsystem lives in `vs-game-reference/decompiled/`. (Extends `docs/README.md`'s map.)
+Where each subsystem lives in `decompiled/`. (Extends `docs/README.md`'s map.)
 
 ## Assemblies
 
@@ -37,4 +37,3 @@ Where each subsystem lives in `vs-game-reference/decompiled/`. (Extends `docs/RE
 | What | Path |
 |---|---|
 | Generator + formatter | `vss-codex/` (run `vss-codex/vss-codex.ps1` to rebuild the reference) |
-| MCP scaffold | `vss-codex/mcp/` |

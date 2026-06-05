@@ -1,14 +1,13 @@
 # Harmony high-value patch targets — server performance
 
-> **⚠️ PROPRIETARY — HAND-WRITTEN — DO NOT COMMIT.** Lives in the gitignored `vs-game-reference/`
-> tree. **Not auto-generated** — `vss-codex` writes `INDEX.md` and `patchable-*.md` but never touches
-> this file. Maintain it by hand; re-verify line numbers after a VS update (the decompiled tree is the
-> source of truth).
+> **⚠️ HAND-WRITTEN — DO NOT COMMIT.** Lives in the gitignored output tree. **Not auto-generated** —
+> `vss-codex` writes `INDEX.md` and `patchable-*.md` but never touches this file. Maintain it by hand;
+> re-verify line numbers after a VS update (the decompiled tree is the source of truth).
 
 Curated shortlist of the methods that actually move server CPU, for server-optimization work. The
 exhaustive machine catalog is in `patchable-*.md`; *how* to patch safely is in the skill's
 `references/harmony-usage.md`; the entity-active mechanism is dissected in `../entity-simulation.md`.
-Paths are relative to `vs-game-reference/decompiled/`.
+Paths are relative to `decompiled/` under the reference root.
 
 **Metric reminder:** the cost that matters is **main-thread tick time** (VS sims on one thread).
 Methods tagged *(off-thread)* run on `OnSeparateThreadTick` / worker pools — patching them helps
@@ -46,7 +45,7 @@ throughput/contention but does **not** directly shrink the main tick. Measure wi
 
 | # | Target | Location | Why it's useful | Patch approach | Risk |
 |--:|---|---|---|---|---|
-| 13 | `ServerMain.ProcessMainThreadTasks` | `VintagestoryLib/Vintagestory.Server/ServerMain.cs:3328` | The main-thread task pump (already wrapped in `FrameProfiler.Enter("mainthreadtasks")`). | Postfix to emit custom TPS/lag telemetry (feeds the future MCP). | Low |
+| 13 | `ServerMain.ProcessMainThreadTasks` | `VintagestoryLib/Vintagestory.Server/ServerMain.cs:3328` | The main-thread task pump (already wrapped in `FrameProfiler.Enter("mainthreadtasks")`). | Postfix to emit custom TPS/lag telemetry. | Low |
 | 14 | `ServerMain.ProcessMain` | `VintagestoryLib/Vintagestory.Server/ServerMain.cs:1563` | Top of the server frame. | Instrument-only; avoid mutating. | High |
 
 ## Notes
