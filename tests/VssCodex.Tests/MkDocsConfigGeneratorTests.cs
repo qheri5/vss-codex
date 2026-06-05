@@ -91,6 +91,18 @@ public class MkDocsConfigGeneratorTests
     [InlineData("generated/api/events.md", "Events")]
     [InlineData("generated/api/Vintagestory.API.Server.md", "Vintagestory.API.Server")]
     [InlineData("generated/harmony/patchable-VSEssentials.md", "Patchable: VSEssentials")]
+    [InlineData("generated/CHANGELOG-1.0-to-1.1.md", "1.0 -> 1.1")]
     public void TitleFor_maps_filenames_to_labels(string rel, string expected) =>
         Assert.Equal(expected, MkDocsConfigGenerator.TitleFor(rel));
+
+    [Fact]
+    public void Changelog_files_get_a_version_diffs_section()
+    {
+        string docs = MakeDocs();
+        File.WriteAllText(Path.Combine(docs, "generated", "CHANGELOG-1.0-to-1.1.md"), "# diff\n");
+
+        string yaml = MkDocsConfigGenerator.BuildYaml(docs, Info);
+        Assert.Contains("Version diffs", yaml);
+        Assert.Contains("generated/CHANGELOG-1.0-to-1.1.md", yaml);
+    }
 }

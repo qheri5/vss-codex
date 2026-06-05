@@ -143,9 +143,12 @@ public static class SignatureFormatter
 
         if (m.IsStatic) sb.Append("static ");
         if (m.IsAbstract) sb.Append("abstract ");
-        else if (m.IsVirtual && m.IsReuseSlot) sb.Append("override ");
+        else if (m.IsVirtual && m.IsReuseSlot)
+        {
+            if (m.IsFinal) sb.Append("sealed ");   // a final override is "sealed override", in that order
+            sb.Append("override ");
+        }
         else if (m.IsVirtual && !m.IsFinal) sb.Append("virtual ");
-        if (m.IsFinal && m.IsVirtual && m.IsReuseSlot) sb.Append("sealed ");
         return sb.ToString();
     }
 

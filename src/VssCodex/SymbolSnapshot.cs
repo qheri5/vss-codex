@@ -31,20 +31,16 @@ public sealed class SymbolSnapshot
     {
         var snap = new SymbolSnapshot { Version = version };
 
-        foreach (var t in apiModule.Types.SelectMany(ApiReferenceGenerator.Flatten)
-                     .Where(ApiReferenceGenerator.IsPublicSurface)
-                     .Where(t => !ApiReferenceGenerator.IsCompilerGenerated(t))
-                     .Where(t => SignatureFormatter.RootNamespace(t).StartsWith("Vintagestory.API", StringComparison.Ordinal)))
+        foreach (var t in ApiSurface.PublicTypes(apiModule))
         {
             snap.Symbols[DocId.ForType(t)] = "";
-            foreach (var m in t.Methods.Where(m => m.IsPublic || m.IsFamily)) snap.Symbols[DocId.ForMethod(m)] = "";
-            foreach (var p in t.Properties.Where(p => (p.GetMethod ?? p.SetMethod) is { IsPublic: true } or { IsFamily: true }))
-                snap.Symbols[DocId.ForProperty(p)] = "";
-            foreach (var f in t.Fields.Where(f => (f.IsPublic || f.IsFamily) && !f.IsSpecialName)) snap.Symbols[DocId.ForField(f)] = "";
+            foreach (var m in t.Methods.Where(MemberVisibility.IsAccessibleMethod)) snap.Symbols[DocId.ForMethod(m)] = "";
+            foreach (var p in t.Properties.Where(MemberVisibility.IsVisibleProperty)) snap.Symbols[DocId.ForProperty(p)] = "";
+            foreach (var f in t.Fields.Where(MemberVisibility.IsVisibleField)) snap.Symbols[DocId.ForField(f)] = "";
         }
 
         foreach (var module in harmonyModules)
-            foreach (var t in module.Types.SelectMany(ApiReferenceGenerator.Flatten).Where(t => !t.IsInterface))
+            foreach (var t in module.Types.SelectMany(ApiSurface.Flatten).Where(t => !t.IsInterface))
                 foreach (var m in t.Methods)
                 {
                     if (m.Name.StartsWith('<')) continue;

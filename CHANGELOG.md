@@ -4,6 +4,33 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
+## [1.2.0] - 2026-06-05
+
+### Fixed
+- Cap the one-off `dotnet tool install` for `ilspycmd` with a timeout so a stalled NuGet restore can no
+  longer hang the whole run.
+- Render a sealed override as `sealed override` (was `override sealed`).
+- Don't borrow a differently-shaped base overload's XML summary for an inherited method that has no
+  matching base overload (arity is now checked).
+- Make the game-version fallback null-safe and warn when `GameVersion.ShortGameVersion` is absent.
+
+### Security
+- Harden archive extraction (`--zip`): extract entry-by-entry, reject any entry whose path escapes the
+  destination (zip-slip / tar-slip), and skip symlink/hardlink entries. Extract into a unique per-run
+  temp dir so concurrent/stale runs can't collide.
+
+### Changed
+- Pin `mkdocs-material` to a known-good version and key the cached venv's readiness sentinel on it, so a
+  breaking theme release can't silently break the site and a version bump re-installs.
+- Internal: share the public-API surface query, member-visibility predicates, the doc-generator base,
+  and the timed subprocess runner across the generators / snapshot / steps (removes duplication so the
+  docs and the changelog snapshot can't drift). Memoize inherited-doc ancestor lookups. Extract a
+  unit-testable `Options.Parse`; warn when both `--zip` and `--install` are given. Remove dead code.
+
+### Tests / CI
+- Add tests for the archive extractor (incl. zip-slip), type/modifier rendering, option parsing, the
+  generators, inherited-doc overload disambiguation, and XML-doc tag flattening. Run CI on macOS too.
+
 ## [1.1.0] - 2026-06-05
 
 ### Added

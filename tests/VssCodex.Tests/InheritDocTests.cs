@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using VssCodex;
 using Xunit;
 
@@ -37,5 +38,31 @@ public class InheritDocTests
 
         var m = TestModule.Method("Simple", "M");
         Assert.Null(resolver.Resolve(m));
+    }
+
+    [Fact]
+    public void Exact_overload_inherits_its_own_base_summary()
+    {
+        var idx = IndexWith(
+            "<member name=\"M:VssCodex.Tests.Fixtures.OverloadBase.Op(System.Int32)\"><summary>one arg</summary></member>");
+        var resolver = new InheritDocResolver(idx);
+
+        var oneArg = TestModule.Type("OverloadDerived").Methods.First(m => m.Name == "Op" && m.Parameters.Count == 1);
+        var s = resolver.Resolve(oneArg);
+        Assert.NotNull(s);
+        Assert.Contains("one arg", s);
+    }
+
+    [Fact]
+    public void Does_not_borrow_a_different_arity_base_overload_summary()
+    {
+        // The base declares only Op(int); the derived Op(int,int) has no matching base overload, so it
+        // must NOT inherit Op(int)'s summary (regression: the single-name fallback ignored arity).
+        var idx = IndexWith(
+            "<member name=\"M:VssCodex.Tests.Fixtures.OverloadBase.Op(System.Int32)\"><summary>one arg</summary></member>");
+        var resolver = new InheritDocResolver(idx);
+
+        var twoArg = TestModule.Type("OverloadDerived").Methods.First(m => m.Name == "Op" && m.Parameters.Count == 2);
+        Assert.Null(resolver.Resolve(twoArg));
     }
 }

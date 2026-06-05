@@ -52,4 +52,13 @@ public class XmlDocIndexTests
             "<member name=\"T:Foo\"><summary>x</summary></member>"));
         Assert.Null(idx.Get("T:Missing"));
     }
+
+    [Fact]
+    public void Flattens_paramref_typeparamref_c_and_para()
+    {
+        var idx = new XmlDocIndex(WriteXml(
+            "<member name=\"M:Foo.Bar\"><summary>uses <paramref name=\"x\"/> and <typeparamref name=\"T\"/> " +
+            "with <c>code</c> in <para>a para</para></summary></member>"));
+        Assert.Equal("uses x and T with code in a para", idx.Get("M:Foo.Bar"));
+    }
 }

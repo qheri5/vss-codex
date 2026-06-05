@@ -11,6 +11,10 @@ namespace VssCodex;
 public sealed class InheritDocResolver
 {
     private readonly XmlDocIndex _xml;
+    // Ancestor chains are resolved once per declaring type and reused across that type's members
+    // (resolution is otherwise O(members × ancestors)).
+    private readonly Dictionary<string, List<TypeDefinition>> _ancestorCache = new();
+
     public InheritDocResolver(XmlDocIndex xml) => _xml = xml;
 
     public string? Resolve(IMemberDefinition member)
@@ -29,14 +33,22 @@ public sealed class InheritDocResolver
         catch { return null; }
     }
 
-    private static string? Probe(TypeDefinition start, Func<TypeDefinition, string?> match)
+    private string? Probe(TypeDefinition start, Func<TypeDefinition, string?> match)
     {
-        foreach (var anc in Ancestors(start))
+        foreach (var anc in AncestorsCached(start))
         {
             var hit = match(anc);
             if (hit != null) return hit;
         }
         return null;
+    }
+
+    private List<TypeDefinition> AncestorsCached(TypeDefinition t)
+    {
+        if (_ancestorCache.TryGetValue(t.FullName, out var cached)) return cached;
+        var list = Ancestors(t).ToList();
+        _ancestorCache[t.FullName] = list;
+        return list;
     }
 
     /// <summary>Base chain first, then (transitive) interfaces — prefer base-class docs over interface docs.</summary>
@@ -71,8 +83,9 @@ public sealed class InheritDocResolver
                 if (s != null) return s;
             }
         }
-        // fallback: a uniquely-named method (no overload ambiguity)
-        if (countByName == 1 && singleByName != null)
+        // fallback: a uniquely-named method (no overload ambiguity) AND the same arity, so we don't
+        // attach a differently-shaped base member's summary to this one.
+        if (countByName == 1 && singleByName != null && singleByName.Parameters.Count == m.Parameters.Count)
             return _xml.Get(DocId.ForMethod(singleByName));
         return null;
     }

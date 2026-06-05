@@ -11,37 +11,16 @@ namespace VssCodex;
 /// One file per (root) namespace + an INDEX. "Endpoints" = the public/protected surface a mod
 /// consumes or overrides.
 /// </summary>
-public sealed class ApiReferenceGenerator
+public sealed class ApiReferenceGenerator : DocGenerator
 {
-    private readonly XmlDocIndex _xml;
-    private readonly InheritDocResolver? _inherit;
-    private readonly string _genDate;
-
     public ApiReferenceGenerator(XmlDocIndex xml, InheritDocResolver? inherit, string genDate)
-    {
-        _xml = xml;
-        _inherit = inherit;
-        _genDate = genDate;
-    }
-
-    /// <summary>Official summary, falling back to an inherited one (tagged) when absent.</summary>
-    private string? Summary(IMemberDefinition member, string docId)
-        => _xml.Get(docId) ?? _inherit?.Resolve(member);
+        : base(xml, inherit, genDate) { }
 
     public (int types, int namespaces, int documented) Generate(ModuleDefinition module, string outDir, bool engineInternal = false)
     {
         string label = MarkdownWriter.AssemblyLabel(module);
 
-        IEnumerable<TypeDefinition> q = module.Types
-            .SelectMany(Flatten)
-            .Where(IsPublicSurface)
-            .Where(t => !IsCompilerGenerated(t));
-        // Normal mode: only the real public modding contract. Drops bundled OSS (CompactExifLib,
-        // ProperVersion) and engine namespaces that happen to ship public types in the API DLL.
-        if (!engineInternal)
-            q = q.Where(t => SignatureFormatter.RootNamespace(t).StartsWith("Vintagestory.API", StringComparison.Ordinal));
-
-        var types = q.ToList();
+        var types = ApiSurface.PublicTypes(module, engineInternal).ToList();
 
         // Bucket by the ROOT namespace so nested public types land with their declaring type.
         var byNamespace = types
@@ -112,7 +91,7 @@ public sealed class ApiReferenceGenerator
         if (t.IsEnum) { WriteEnum(sb, t); sb.AppendLine("---").AppendLine(); return; }
 
         // Constructors (instance, public/protected) — rendered explicitly (they are IsSpecialName).
-        var ctors = t.Methods.Where(m => m.IsConstructor && !m.IsStatic && (m.IsPublic || m.IsFamily))
+        var ctors = t.Methods.Where(MemberVisibility.IsVisibleConstructor)
             .OrderBy(m => m.Parameters.Count).ToList();
         if (ctors.Count > 0)
         {
@@ -121,7 +100,7 @@ public sealed class ApiReferenceGenerator
             sb.AppendLine();
         }
 
-        var fields = t.Fields.Where(f => (f.IsPublic || f.IsFamily) && !f.IsSpecialName)
+        var fields = t.Fields.Where(MemberVisibility.IsVisibleField)
             .OrderBy(f => f.Name, StringComparer.Ordinal).ToList();
         if (fields.Count > 0)
         {
@@ -130,7 +109,7 @@ public sealed class ApiReferenceGenerator
             sb.AppendLine();
         }
 
-        var props = t.Properties.Where(IsVisibleProperty)
+        var props = t.Properties.Where(MemberVisibility.IsVisibleProperty)
             .OrderBy(p => p.Name, StringComparer.Ordinal).ToList();
         if (props.Count > 0)
         {
@@ -139,7 +118,7 @@ public sealed class ApiReferenceGenerator
             sb.AppendLine();
         }
 
-        var events = t.Events.Where(e => e.AddMethod is { IsPublic: true } or { IsFamily: true })
+        var events = t.Events.Where(MemberVisibility.IsVisibleEvent)
             .OrderBy(e => e.Name, StringComparer.Ordinal).ToList();
         if (events.Count > 0)
         {
@@ -148,7 +127,7 @@ public sealed class ApiReferenceGenerator
             sb.AppendLine();
         }
 
-        var methods = t.Methods.Where(IsVisibleMethod)
+        var methods = t.Methods.Where(MemberVisibility.IsVisibleMethod)
             .OrderBy(m => m.Name, StringComparer.Ordinal).ToList();
         if (methods.Count > 0)
         {
@@ -174,37 +153,6 @@ public sealed class ApiReferenceGenerator
         sb.Append("- ").Append(SignatureFormatter.ObsoletePrefix(member)).Append('`').Append(signature).Append('`');
         if (summary != null) sb.Append(" — ").Append(summary);
         sb.AppendLine();
-    }
-
-    // -- filters --------------------------------------------------------------
-
-    public static IEnumerable<TypeDefinition> Flatten(TypeDefinition t)
-    {
-        yield return t;
-        foreach (var n in t.NestedTypes)
-            foreach (var x in Flatten(n))
-                yield return x;
-    }
-
-    public static bool IsPublicSurface(TypeDefinition t) =>
-        t.IsPublic || t.IsNestedPublic || t.IsNestedFamily || t.IsNestedFamilyOrAssembly;
-
-    public static bool IsCompilerGenerated(TypeDefinition t) =>
-        t.Name.StartsWith('<') || t.Name.StartsWith("__") ||
-        t.CustomAttributes.Any(a => a.AttributeType.Name == "CompilerGeneratedAttribute");
-
-    private static bool IsVisibleProperty(PropertyDefinition p)
-    {
-        var a = p.GetMethod ?? p.SetMethod;
-        return a is { IsPublic: true } or { IsFamily: true };
-    }
-
-    private static bool IsVisibleMethod(MethodDefinition m)
-    {
-        // Constructors are rendered in their own subsection; everything special-name is excluded here.
-        if (m.IsSpecialName || m.IsGetter || m.IsSetter || m.IsAddOn || m.IsRemoveOn) return false;
-        if (m.Name.StartsWith('<')) return false;
-        return m.IsPublic || m.IsFamily;
     }
 
     private static string NamespaceFile(string ns) => ns.Replace("(global)", "global") + ".md";

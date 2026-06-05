@@ -1,3 +1,4 @@
+using System.Linq;
 using VssCodex;
 using Xunit;
 
@@ -85,5 +86,60 @@ public class SignatureFormatterTests
     {
         var m = TestModule.Method("Simple", "Prot");
         Assert.StartsWith("protected ", SignatureFormatter.MethodSignature(m));
+    }
+
+    [Theory]
+    [InlineData("Outer", "public class Outer")]
+    [InlineData("IDocumented", "public interface IDocumented")]
+    [InlineData("StructFixture", "public struct StructFixture")]
+    [InlineData("EnumFixture", "public enum EnumFixture")]
+    [InlineData("NativeFixture", "public static class NativeFixture")]
+    [InlineData("AbstractFixture", "public abstract class AbstractFixture")]
+    [InlineData("SealedFixture", "public sealed class SealedFixture")]
+    [InlineData("DerivedDoc", "public class DerivedDoc : VssCodex.Tests.Fixtures.IDocumented")]
+    [InlineData("Combined", "public class Combined : VssCodex.Tests.Fixtures.AbstractFixture, VssCodex.Tests.Fixtures.IDocumented")]
+    public void TypeDeclaration_matrix(string type, string expected) =>
+        Assert.Equal(expected, SignatureFormatter.TypeDeclaration(TestModule.Type(type)));
+
+    [Fact]
+    public void Sealed_override_modifier_order() // regression: must be "sealed override", not "override sealed"
+    {
+        var m = TestModule.Method("SealedOverrideFixture", "Vm");
+        Assert.Equal("public sealed override void Vm()", SignatureFormatter.MethodSignature(m));
+    }
+
+    [Fact]
+    public void Override_modifier()
+    {
+        var m = TestModule.Type("OverloadDerived").Methods.First(x => x.Name == "Op" && x.Parameters.Count == 1);
+        Assert.Equal("public override void Op(int a)", SignatureFormatter.MethodSignature(m));
+    }
+
+    [Fact]
+    public void Abstract_modifier()
+    {
+        var m = TestModule.Method("AbstractFixture", "DoAbstract");
+        Assert.Equal("public abstract void DoAbstract()", SignatureFormatter.MethodSignature(m));
+    }
+
+    [Fact]
+    public void Const_field_signature()
+    {
+        var f = TestModule.Field("Members", "K");
+        Assert.Equal("const int K", SignatureFormatter.FieldSignature(f));
+    }
+
+    [Fact]
+    public void Static_readonly_field_signature()
+    {
+        var f = TestModule.Field("Members", "RO");
+        Assert.Equal("static readonly int RO", SignatureFormatter.FieldSignature(f));
+    }
+
+    [Fact]
+    public void Static_event_signature()
+    {
+        var e = TestModule.Event("Members", "Ping");
+        Assert.Equal("static event System.Action Ping", SignatureFormatter.EventSignature(e));
     }
 }
