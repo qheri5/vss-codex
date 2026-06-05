@@ -5,6 +5,7 @@
 # .NET build output
 bin/
 obj/
+TestResults/
 
 # Generator handoff / outputs (only ever written under vs-game-reference/, never here — defensive)
 build-info.json

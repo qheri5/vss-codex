@@ -39,6 +39,17 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Clean failure: print a one-line reason (not a stack trace) and exit non-zero on any terminating error.
+trap {
+    Write-Host ""
+    Write-Host "##############################################################" -ForegroundColor Red
+    Write-Host "#  vss-codex FAILED" -ForegroundColor Red
+    Write-Host ("#  {0}" -f $_.Exception.Message) -ForegroundColor Red
+    Write-Host "##############################################################" -ForegroundColor Red
+    exit 1
+}
+
 $RepoRoot = $PSScriptRoot
 if (-not $Container) { $Container = (Resolve-Path (Join-Path $RepoRoot '..')).Path }
 $Ref = Join-Path $Container 'vs-game-reference'

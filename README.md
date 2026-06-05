@@ -67,6 +67,23 @@ MCP stub: Python + `mcp`. Tested end-to-end on VS **1.20**, **1.21**, and **1.22
 | `docs-src/` | curated docs source (prose + `file:line`, **no verbatim decompiled code**) |
 | `mcp/` | the **MCP** design doc + stub server |
 | `docs/` | this project's own documentation |
+| `tests/VssCodex.Tests/` | xUnit unit tests for the generator's pure logic |
+
+## Tests
+
+```powershell
+dotnet test tests/VssCodex.Tests
+```
+
+39 xUnit tests cover the version-sensitive logic — doc-comment id generation (generics, byref, arrays,
+nested types, ctors), C# signature rendering, `[Obsolete]` detection, XML-summary flattening + cref
+shortening, inherited-summary resolution, Harmony patchability (concrete vs abstract vs P/Invoke), and
+the snapshot/CHANGELOG diff. Fixtures are read back from the test assembly with Mono.Cecil, so the
+tests need **no** Vintage Story binaries.
+
+**Error handling:** the generator returns a non-zero exit with a one-line message (no stack trace) on a
+missing assembly (exit 2) or bad arguments (exit 1); the formatter traps any failure and prints a clean
+`vss-codex FAILED` banner with the reason, exiting 1.
 
 ## Rules
 

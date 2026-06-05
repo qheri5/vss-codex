@@ -29,6 +29,9 @@ if (!Directory.Exists(install))
     return 1;
 }
 
+try
+{
+
 string genDate = DateTime.Now.ToString("yyyy-MM-dd");
 string apiDir = Path.Combine(outDir, "api");
 string harmonyDir = Path.Combine(outDir, "harmony");
@@ -122,6 +125,19 @@ info.Save(outDir);
 
 Console.WriteLine($"Done. Generated docs under: {outDir}");
 return 0;
+
+}
+catch (FileNotFoundException ex)
+{
+    Console.Error.WriteLine($"error: required assembly not found - {ex.Message}");
+    Console.Error.WriteLine("       check that --install points at a Vintage Story install/extract with the VS-authored DLLs.");
+    return 2;
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine($"error: generation failed - {ex.GetType().Name}: {ex.Message}");
+    return 2;
+}
 
 static void CleanGenerated(string apiDir, string harmonyDir)
 {
