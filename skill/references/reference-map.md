@@ -36,4 +36,4 @@ Where each subsystem lives in `decompiled/`. (Extends `docs/README.md`'s map.)
 
 | What | Path |
 |---|---|
-| Generator + formatter | `vss-codex/` (run `vss-codex/vss-codex.ps1` to rebuild the reference) |
+| Generator + orchestrator | `vss-codex/` (run `dotnet run --project vss-codex/src/VssCodex` to rebuild) |

@@ -32,53 +32,53 @@ It covers **client and server** modding alike, and you can use either layer on i
 ## How it works
 
 ```
-                 vss-codex.ps1  (the formatter / orchestrator)
+                 dotnet run --project src/VssCodex   (the vss-codex CLI)
                         │
   ┌──────────┬─────────┼───────────────┐
   ▼          ▼         ▼                ▼
-01 decompile  02 generate (VssCodex)  03 install docs + render skill
+01 decompile  02 generate            03 install docs + render skill
 ilspycmd      Mono.Cecil → markdown   curated notes + the vss skill
   │              │                       │
   ▼              ▼                       ▼
 out/reference/decompiled/   …/docs/generated/   out/.claude/skills/vss/
 ```
 
-1. **Decompile** the Vintage Story assemblies with `ilspycmd`.
+1. **Decompile** the Vintage Story assemblies with `ilspycmd` (run as a subprocess, auto-installed).
 2. **Generate** the docs from the binaries with Mono.Cecil (no parsing of decompiled text): the API
    reference, events/enums indexes, an engine-internals surface, the Harmony patchability catalog,
    and a version-diff CHANGELOG.
 3. **Install** the curated notes and render the `vss` skill.
 
-It re-runs idempotently, so you can rebuild against a new game version any time.
+One cross-platform process (no PowerShell), idempotent — rebuild against a new game version any time.
 
 ## Quickstart
 
-No paths to configure: the script finds itself (so you can run it from anywhere), defaults the game
-install to `%APPDATA%\Vintagestory`, and writes everything into a gitignored `out/` folder next to it.
-Override any of that with a flag.
+Nothing to configure: it defaults the game install to `%APPDATA%\Vintagestory` (on Windows) and writes
+everything into a gitignored `out/` folder. Override any of that with a flag.
 
-```powershell
+```bash
 # Build everything from your local Vintage Story install
-./vss-codex.ps1
+dotnet run --project src/VssCodex
 
 # Converter mode: hand it a downloaded server/client archive (.zip or .tar.gz) and it does the rest
-./vss-codex.ps1 -Zip <path-to-vs-archive>
+dotnet run --project src/VssCodex -- --zip <path-to-vs-archive>
 
 # Use a non-default game install, or a custom output dir
-./vss-codex.ps1 -Install <vs-install-dir> -Out <output-dir>
+dotnet run --project src/VssCodex -- --install <vs-install-dir> --out <output-dir>
 
 # Reuse the existing decompiled tree (skip step 01) for fast doc/skill iteration
-./vss-codex.ps1 -SkipDecompile
+dotnet run --project src/VssCodex -- --skip-decompile
 ```
 
-**Converter mode** (`-Zip`) is the zero-setup path: download an official server build (e.g. from
-`https://cdn.vintagestory.at/gamefiles/stable/`), point `-Zip` at it, and `vss-codex` extracts it,
-locates the binaries, and runs the whole pipeline. Server-only archives simply lack the client-only
-assemblies; those are skipped cleanly.
+**Converter mode** (`--zip`) is the zero-setup path: download an official server build (e.g. from
+`https://cdn.vintagestory.at/gamefiles/stable/`), point `--zip` at it, and `vss-codex` extracts it
+(pure .NET), locates the binaries, and runs the whole pipeline. Server-only archives simply lack the
+client-only assemblies; those are skipped cleanly.
 
-**Requirements:** the .NET 10 SDK (`dotnet`) and `ilspycmd` (auto-installed as a global tool). You
-need either a local VS install or a VS archive — the binaries and `VintagestoryAPI.xml` are read
-directly. Tested end-to-end on Vintage Story **1.20**, **1.21**, and **1.22**.
+**Requirements:** the .NET 10 SDK (`dotnet`) and `ilspycmd` (auto-installed as a global tool). You need
+either a local VS install or a VS archive — the binaries and `VintagestoryAPI.xml` are read directly.
+**Runs on Windows, Linux, and macOS** — there's no PowerShell or shell-specific code. Tested end-to-end
+on Vintage Story **1.20**, **1.21**, and **1.22**.
 
 ## What it produces
 
@@ -107,8 +107,7 @@ about the VS API and it will consult the reference.
 
 | Path | Role |
 |---|---|
-| `vss-codex.ps1` + `steps/` | the **formatter** — runs the pipeline |
-| `src/VssCodex/` | the **generator** — Mono.Cecil → markdown (C#) |
+| `src/VssCodex/` | the **tool** (C#) — CLI + orchestrator (`Program.cs`, `Pipeline.cs`) + generator (Mono.Cecil → markdown) |
 | `skill/` | the **skill source** (`SKILL.md.template` + references + examples) |
 | `docs-src/` | curated docs source (prose + `file:line`, no verbatim decompiled code) |
 | `docs/` | this project's own documentation |
@@ -116,7 +115,7 @@ about the VS API and it will consult the reference.
 
 ## Tests & error handling
 
-```powershell
+```bash
 dotnet test tests/VssCodex.Tests
 ```
 

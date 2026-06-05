@@ -9,9 +9,9 @@
 The **game-understanding base**, produced by **`vss-codex`**. Don't edit it by hand — it is rebuilt
 from a VS install by one command (from the `vss-codex` repo):
 
-```powershell
-./vss-codex.ps1                 # full rebuild (decompile + generate + render skill)
-./vss-codex.ps1 -SkipDecompile  # docs/skill only (reuse existing decompiled tree)
+```
+dotnet run --project src/VssCodex                     # full rebuild (decompile + generate + render skill)
+dotnet run --project src/VssCodex -- --skip-decompile # docs/skill only (reuse existing decompiled tree)
 ```
 
 ## Contents
@@ -29,11 +29,11 @@ reference/
 ## Source
 
 - **Game version:** stamped into every generated file + `docs/generated/build-info.json`.
-- **Built by:** `vss-codex` (generator `VssCodex` + formatter `vss-codex.ps1`).
+- **Built by:** the `vss-codex` tool (`dotnet run --project src/VssCodex`).
 - Third-party OSS in `%APPDATA%\Vintagestory\Lib\` is deliberately **not** decompiled (documented
   upstream); Harmony is documented from its upstream wiki.
 
 ## After a VS update
 
-Re-run `vss-codex.ps1`. The generated `docs/generated/CHANGELOG-<old>-to-<new>.md` lists what changed
+Re-run `vss-codex`. The generated `docs/generated/CHANGELOG-<old>-to-<new>.md` lists what changed
 (API members added/removed, patchability flips) so you can re-verify `high-value-targets.md`.
