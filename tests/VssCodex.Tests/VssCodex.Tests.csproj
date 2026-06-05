@@ -10,20 +10,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <VintagestoryDir>$(APPDATA)\Vintagestory</VintagestoryDir>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Cross-platform: same NuGet Cecil as the main project (the tests read fixtures via Cecil). -->
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\VssCodex\VssCodex.csproj" />
-    <Reference Include="Mono.Cecil">
-      <HintPath>$(VintagestoryDir)\Lib\Mono.Cecil.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

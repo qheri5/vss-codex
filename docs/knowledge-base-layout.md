@@ -34,10 +34,10 @@ out/                                  (gitignored)
     └── examples/    (harmony-patch-server.cs, event-handler.cs, command-registration.cs, content-block.cs)
 ```
 
-## Scale (per a recent VS build)
+## Scale (rough orders of magnitude — exact per-version counts are in `build-info.json`)
 
 - 10 decompiled assemblies (~4000 `.cs`).
-- API: ~1100 public types in 12 `Vintagestory.API.*` namespaces; ~115 events; ~140 enums; ~37% of
+- API: ~1,100 public types in 12 `Vintagestory.API.*` namespaces; ~115 events; ~140 enums; ~37% of
   types carry an upstream XML summary (more via inheritance).
 - Engine internals (`lib/`): ~950 public types.
 - Harmony catalog: e.g. `VintagestoryLib` ~13.5k of ~14k methods patchable.

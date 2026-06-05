@@ -20,7 +20,7 @@ public sealed class ChangelogGenerator
         var prev = Directory.GetFiles(outDir, ".snapshot-*.json")
             .Select(SymbolSnapshot.Load)
             .Where(s => s != null && s.Version != current.Version)
-            .OrderBy(s => s!.Version, StringComparer.Ordinal)
+            .OrderBy(s => VersionKey(s!.Version))   // numeric, so 1.10 sorts after 1.9
             .LastOrDefault();
 
         string? written = null;
@@ -54,7 +54,7 @@ public sealed class ChangelogGenerator
         {
             sb.AppendLine($"## Patchability flipped ({flipped.Count})").AppendLine();
             foreach (var (k, from, to) in flipped)
-                sb.AppendLine($"- `{Trim(k)}` — {Flag(from)} → {Flag(to)}");
+                sb.AppendLine($"- `{k}` — {Flag(from)} → {Flag(to)}");
             sb.AppendLine();
         }
         Section(sb, $"Added ({added.Count})", added);
@@ -67,11 +67,18 @@ public sealed class ChangelogGenerator
     {
         sb.AppendLine($"## {title}").AppendLine();
         if (ids.Count == 0) { sb.AppendLine("_none_").AppendLine(); return; }
-        foreach (var id in ids.Take(2000)) sb.AppendLine($"- `{Trim(id)}`");
+        foreach (var id in ids.Take(2000)) sb.AppendLine($"- `{id}`");
         if (ids.Count > 2000) sb.AppendLine($"- … and {ids.Count - 2000} more");
         sb.AppendLine();
     }
 
     private static string Flag(string f) => f switch { "P" => "✓ patchable", "N" => "✗ not", _ => f };
-    private static string Trim(string docId) => docId; // keep full id; it's the stable key
+
+    /// <summary>Numeric version key so version strings sort correctly (1.10 &gt; 1.9, not ordinal).</summary>
+    private static (int, int, int, int) VersionKey(string v)
+    {
+        var p = v.Split('.', '-', '+');
+        int At(int i) => i < p.Length && int.TryParse(p[i], out var n) ? n : 0;
+        return (At(0), At(1), At(2), At(3));
+    }
 }

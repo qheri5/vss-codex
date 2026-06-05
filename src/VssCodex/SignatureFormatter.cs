@@ -127,6 +127,7 @@ public static class SignatureFormatter
         null => "null",
         string s => "\"" + s + "\"",
         bool b => b ? "true" : "false",
+        char ch => "'" + ch + "'",
         _ => c.ToString() ?? "null",
     };
 
@@ -172,7 +173,7 @@ public static class SignatureFormatter
         // base type + interfaces
         var bases = new List<string>();
         if (t.BaseType != null && t.BaseType.FullName is not "System.Object" and not "System.ValueType"
-            and not "System.Enum" && !t.IsEnum)
+            and not "System.Enum" and not "System.MulticastDelegate" and not "System.Delegate" && !t.IsEnum)
             bases.Add(TypeName(t.BaseType));
         foreach (var i in t.Interfaces) bases.Add(TypeName(i.InterfaceType));
         if (bases.Count > 0) sb.Append(" : ").Append(string.Join(", ", bases));

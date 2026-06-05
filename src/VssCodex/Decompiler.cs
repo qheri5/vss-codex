@@ -13,6 +13,7 @@ public static class Decompiler
     private static readonly string[] CoreAssemblies =
         { "VintagestoryAPI", "VintagestoryLib", "VintagestoryServer", "Vintagestory", "VSCrashReporter", "VSCrashReporterLib", "ModMaker" };
     private static readonly string[] ModAssemblies = { "VSEssentials", "VSSurvivalMod", "VSCreativeMod" };
+    private const int DecompileTimeoutMs = 10 * 60 * 1000; // 10 min per assembly
 
     public static void Run(string install, string refDir)
     {
@@ -64,7 +65,13 @@ public static class Decompiler
             p.Start();
             p.BeginOutputReadLine();
             p.BeginErrorReadLine();
-            p.WaitForExit();
+            // Generous per-assembly cap so a hung/looping ilspycmd can't freeze the whole pipeline.
+            if (!p.WaitForExit(DecompileTimeoutMs))
+            {
+                try { p.Kill(entireProcessTree: true); } catch { }
+                return -2; // caller treats a non-zero exit as a partial decompile
+            }
+            p.WaitForExit(); // flush the async output readers
             return p.ExitCode;
         }
         catch { return -1; }

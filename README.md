@@ -77,8 +77,9 @@ client-only assemblies; those are skipped cleanly.
 
 **Requirements:** the .NET 10 SDK (`dotnet`) and `ilspycmd` (auto-installed as a global tool). You need
 either a local VS install or a VS archive — the binaries and `VintagestoryAPI.xml` are read directly.
-**Runs on Windows, Linux, and macOS** — there's no PowerShell or shell-specific code. Tested end-to-end
-on Vintage Story **1.20**, **1.21**, and **1.22**.
+**Runs on Windows, Linux, and macOS** — there's no PowerShell or shell-specific code. On Linux/macOS,
+point it at the game with `--install`/`--zip` or the `VINTAGE_STORY` environment variable (on Windows it
+defaults to `%APPDATA%\Vintagestory`). Tested end-to-end across Vintage Story **1.20–1.22**.
 
 ## What it produces
 

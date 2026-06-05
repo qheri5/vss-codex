@@ -11,8 +11,8 @@ public sealed class Options
 }
 
 /// <summary>
-/// The orchestrator (formerly the PowerShell wrapper): resolve the install, decompile, generate, and
-/// install the docs + render the skill - all in one cross-platform process. Output goes to out/.
+/// The orchestrator: resolve the install, decompile, generate, and install the docs + render the
+/// skill - all in one cross-platform process. Output goes to out/.
 /// </summary>
 public static class Pipeline
 {
@@ -85,7 +85,14 @@ public static class Pipeline
         Console.WriteLine("##############################################################");
     }
 
-    private static string DefaultInstall() => OperatingSystem.IsWindows()
-        ? Environment.ExpandEnvironmentVariables(@"%APPDATA%\Vintagestory")
-        : throw new Exception("no default install on this OS - pass --install <dir> or --zip <archive>");
+    // Cross-platform default: the VINTAGE_STORY env var (the VS modding convention) works on any OS;
+    // otherwise the Windows %APPDATA% location; otherwise the user must pass --install/--zip.
+    private static string DefaultInstall()
+    {
+        string? env = Environment.GetEnvironmentVariable("VINTAGE_STORY");
+        if (!string.IsNullOrWhiteSpace(env)) return env;
+        if (OperatingSystem.IsWindows())
+            return Environment.ExpandEnvironmentVariables(@"%APPDATA%\Vintagestory");
+        throw new Exception("no default install on this OS - set VINTAGE_STORY, or pass --install <dir> or --zip <archive>");
+    }
 }

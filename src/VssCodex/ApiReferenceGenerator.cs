@@ -58,7 +58,7 @@ public sealed class ApiReferenceGenerator
             if (engineInternal)
                 sb.AppendLine("> **ENGINE-INTERNAL — unstable, no official docs.** These are public types of the")
                   .AppendLine("> engine assembly, not the modding contract; signatures only (no XML summaries).").AppendLine();
-            sb.AppendLine($"[← index]({(engineInternal ? "INDEX.md" : "INDEX.md")}) · {g.Count()} public types.").AppendLine();
+            sb.AppendLine($"[← index](INDEX.md) · {g.Count()} public types.").AppendLine();
 
             foreach (var t in g.OrderBy(SignatureFormatter.QualifiedFriendlyName, StringComparer.Ordinal))
                 WriteType(sb, t);
