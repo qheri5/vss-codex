@@ -4,6 +4,39 @@ All notable changes to **vss-codex** (the tool). Follows [Keep a Changelog](http
 and [Semantic Versioning](https://semver.org). This is distinct from the per-game-version
 `CHANGELOG-<old>-to-<new>.md` files the tool generates.
 
+## [1.4.0] - 2026-06-05
+
+Skill-quality release driven by a heavy active evaluation of the generated `vss` skill.
+
+### Added
+- **Undocumented-type signal**: API types with no official XML summary are flagged
+  `⚠ No official summary — signature-only` (the INDEX coverage note and the skill explain it), so a
+  signature is never mistaken for documented behaviour — ~63% of API types are undocumented by VS.
+- **Event handler signatures**: `events.md` shows each event's `handler:` signature inline (the exact
+  method shape to write), with closed-generic substitution (e.g. `Action<int>` → `(int obj)`), plus a
+  same-name/side disambiguation note (a client and a server event can share a name with different
+  delegates and player types).
+- **Per-namespace overview**: large namespaces (Common, Client, …) lead with a flat "Types in this
+  namespace" list, so you can scan/grep without paging through the file.
+- **Content-modding in the skill**: the rendered skill now ships the mod-setup reference and a
+  Block+BlockEntity example (project/modinfo/csproj/asset layout + a runnable example).
+
+### Changed
+- **Skill guidance hardened**: anti-fabrication + thin-topic rules (cite-or-defer; for content/JSON,
+  GUI/render, worldgen, networking and trading, point to the decompiled source / official wiki instead
+  of inventing); anti-false-negative search (grep repo-wide and check the aggregate
+  `ICoreServerAPI`/`ICoreClientAPI` before answering "not found"); exact-member-line citation;
+  `[Obsolete]` awareness; and "quote the exact code expression, don't paraphrase" for engine internals.
+- **README**: documents the two outputs (the generated knowledge base vs the hand-written skill) and how
+  a skill change reaches users (repo clone vs prebuilt-binary release).
+
+### Fixed
+- `mod-setup` lang-key order corrected to `<modid>:block-<name>` (verified against the engine source).
+
+### Tests
+- Generator suite 98 → 104: signature-only badge, per-namespace overview, and delegate-handler rendering
+  including closed-generic substitution.
+
 ## [1.3.0] - 2026-06-05
 
 ### Added
