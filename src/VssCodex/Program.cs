@@ -6,8 +6,8 @@ using VssCodex;
 // version-diff CHANGELOG.
 //   Usage: VssCodex --install "<VS install dir>" --out "<generated docs dir>"
 //   Defaults: --install %APPDATA%\Vintagestory
-// The --out dir MUST be the gitignored vs-game-reference/docs/generated tree (the PowerShell wrapper
-// enforces this). Output is proprietary; never commit it.
+// The --out dir is the gitignored out/reference/docs/generated tree (the PowerShell wrapper enforces
+// this). Output is derived from proprietary binaries; never commit it.
 
 string install = Environment.ExpandEnvironmentVariables(@"%APPDATA%\Vintagestory");
 string? outDir = null;

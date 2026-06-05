@@ -3,8 +3,8 @@
 .SYNOPSIS  Step 02 - build + run the VssCodex generator.
 .DESCRIPTION
     Emits the API reference, events/enums indexes, engine-internal lib/ surface, the Harmony catalog,
-    the version-diff CHANGELOG, and build-info.json into ../vs-game-reference/docs/generated/.
-    Output is proprietary - the path is forced inside vs-game-reference (gitignored).
+    the version-diff CHANGELOG, and build-info.json into the reference root's docs/generated/.
+    Output is derived from proprietary binaries - the path is forced under the reference root (gitignored).
 #>
 [CmdletBinding()]
 param(
@@ -17,7 +17,8 @@ $ErrorActionPreference = 'Stop'
 $proj = Join-Path $RepoRoot 'src\VssCodex\VssCodex.csproj'
 $out  = Join-Path $Ref 'docs\generated'
 if (-not (Test-Path $proj)) { throw "generator project not found: $proj" }
-if ($out -notmatch 'vs-game-reference') { throw "refusing to write generated docs outside vs-game-reference ($out)" }
+# The output must live under the reference root (default: the gitignored out/ tree), never elsewhere.
+if ($out -notmatch '[\\/]reference[\\/]') { throw "refusing to write generated docs outside the reference root ($out)" }
 
 Write-Host "  building VssCodex ..."
 dotnet build $proj -c Release --nologo -v quiet

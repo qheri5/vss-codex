@@ -5,16 +5,16 @@ decompiled source in `../decompiled/`. Consult this **before** diving into 4000 
 Each doc cites `assembly/path:line` so you can jump to the source on demand.
 
 When you learn something non-obvious about the engine while working, **add it here** —
-this is the project's growing skill-like reference.
+this is a growing skill-like reference for the engine.
 
 ## Docs
 
 ### Hand-written
 - [entity-simulation.md](entity-simulation.md) — server tick loop, the **"entity active"**
   predicate (`State == Active` gates AI/pathfinding), `AlwaysActive` escape hatch, and the
-  player-gated spawner. Foundation for the anchor/entity load benches (PROLAB-14/17).
+  player-gated spawner. Foundation for headless entity/AI load benchmarking.
 
-### Auto-generated (`generated/`, via `vintage-story-server/scripts/generate-vs-docs.ps1`)
+### Auto-generated (`generated/`, via `vss-codex`)
 - [generated/api/INDEX.md](generated/api/INDEX.md) — **API endpoints reference**: the public modding
   surface of `VintagestoryAPI.dll` (~1095 types in 12 `Vintagestory.API.*` namespaces), with official
   `<summary>` text merged from `VintagestoryAPI.xml` and inherited from base types/interfaces. One

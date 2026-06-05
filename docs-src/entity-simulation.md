@@ -1,8 +1,8 @@
 # Entity simulation & the "entity active" predicate
 
-> VS 1.22.3. File:line citations point into `../decompiled/`.
-> This is the single most important system for our load-benchmark / optimization work
-> (PROLAB-14 Synergy −68 % entity tick, PROLAB-17 anchor bench).
+> File:line citations point into `../decompiled/`.
+> This is the single most important system for server load-benchmarking / optimization work: AI is
+> the dominant per-entity cost, and it is gated by the "entity active" state described below.
 
 ## TL;DR
 
@@ -14,8 +14,8 @@ An entity is `Active` *only* when a player is within its `SimulationRange`, **or
 1. the entity spawner is fully disabled → **no mobs spawn** in anchored chunks, and
 2. any entity that did exist would be `Inactive` → **its AI never ticks**.
 
-That is exactly why the v0.2 anchor bench measured chunk/block load but **0 active
-entities / no AI**. To exercise AI headless we must **spawn mobs ourselves and force them
+That is exactly why a chunk-anchoring bench can measure chunk/block load yet see **0 active
+entities / no AI**. To exercise AI headless you must **spawn mobs yourself and force them
 `Active`** — which the public API allows with no Harmony patch.
 
 ## The call chain (who ticks what)
@@ -72,9 +72,9 @@ nearby is **not** removed server-side. Good — a headless bench is sustainable.
 So natural population can't fill an anchored bubble headless. For a deterministic
 benchmark we want explicit control over the mob count anyway.
 
-## Implications for VssAnchor v0.3 (entity-active bench)
+## Implications for a headless entity-AI bench
 
-**No Harmony required.** Pure public API:
+To exercise entity AI with no connected client, **no Harmony is required** — the public API is enough:
 
 | Need | API surface |
 |------|-------------|
@@ -82,11 +82,10 @@ benchmark we want explicit control over the mob count anyway.
 | create a mob | `sapi.World.GetEntityType(AssetLocation)` + `world.ClassRegistry.CreateEntity(props)` then `sapi.World.SpawnEntity(entity)` (`IWorldAccessor.cs:280`) |
 | force AI on with no player | set `entity.AlwaysActive = true` **and** `entity.State = EnumEntityState.Active` (both public) |
 
-Design: for each anchor, spawn a configurable number/type of test mobs near its center,
-mark them `AlwaysActive` + `Active`. `EntityBehaviorTaskAI.OnGameTick` then runs
-pathfinding + tasks headless, exercising exactly the entity-tick that Synergy optimizes →
-unblocks PROLAB-14 measurement on the existing `vs-anchor-bench.sh` harness.
+Design: spawn a configurable number/type of test mobs at a chosen location and mark them
+`AlwaysActive` + `Active`. `EntityBehaviorTaskAI.OnGameTick` then runs pathfinding + tasks headless,
+exercising exactly the entity-tick that entity-optimization mods target.
 
-Caveat to verify on weavy: some AI tasks need *targets* (other entities/players) to do
-real work — wander/pathfinding will run regardless, but to load the seek/flee tasks we may
-want to spawn a mix (e.g. a parked fake target or predator+prey pairs). Measure first.
+Caveat to verify in-game: some AI tasks need *targets* (other entities/players) to do real work —
+wander/pathfinding will run regardless, but to load the seek/flee tasks you may want to spawn a mix
+(e.g. a parked target or predator+prey pairs). Measure first.

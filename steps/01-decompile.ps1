@@ -1,9 +1,9 @@
 #requires -Version 5.1
 <#
-.SYNOPSIS  Step 01 - decompile the 10 VS-authored assemblies with ilspycmd.
+.SYNOPSIS  Step 01 - decompile the VS-authored assemblies with ilspycmd.
 .DESCRIPTION
-    Produces ../vs-game-reference/decompiled/<assembly>/ (compilable projects). Third-party OSS in
-    Lib/ is deliberately NOT decompiled (documented upstream). Output is proprietary - gitignored.
+    Produces <reference-root>/decompiled/<assembly>/ (compilable projects). Third-party OSS in Lib/ is
+    deliberately NOT decompiled (documented upstream). Output is derived from proprietary binaries - gitignored.
 #>
 [CmdletBinding()]
 param(

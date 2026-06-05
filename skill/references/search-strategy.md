@@ -1,19 +1,19 @@
 # Search recipes over the reference
 
-Concrete Grep/Glob patterns. Base dir: `vs-game-reference/`. Prefer the generated docs for
-"what/where", drop to `decompiled/` for "how".
+Concrete Grep/Glob patterns. All paths are relative to the **reference root** (the absolute path is in
+`SKILL.md`). Prefer the generated docs for "what/where", drop to `decompiled/` for "how".
 
 ## Find a type's source
 
 A type lives at `decompiled/<assembly>/<namespace-as-folders>/<TypeName>.cs`. If you don't know the
 assembly:
-- `Glob` `vs-game-reference/decompiled/**/EntityAgent.cs`
+- `Glob` `decompiled/**/EntityAgent.cs`
 - or `Grep` for the declaration: pattern `class EntityAgent\b` / `interface ICoreServerAPI\b` /
-  `enum EnumEntityState\b`, path `vs-game-reference/decompiled/`.
+  `enum EnumEntityState\b`, path `decompiled/`.
 
 ## Look up an API signature / summary
 
-- `Grep` the type name with `## ` prefix in `vs-game-reference/docs/generated/api/`, e.g.
+- `Grep` the type name with `## ` prefix in `docs/generated/api/`, e.g.
   pattern `## BlockEntity\b`. Each namespace is one file; `api/INDEX.md` maps namespace → file.
 - For a member: `Grep` the method name inside the namespace file (it lists `signature — summary`).
 - Summaries are official (from `VintagestoryAPI.xml`) or `*(inherited)*` from a base/interface;
@@ -29,7 +29,7 @@ assembly:
 
 ## Check Harmony patchability
 
-- `Grep` the method name in `vs-game-reference/docs/generated/harmony/patchable-<assembly>.md`;
+- `Grep` the method name in `docs/generated/harmony/patchable-<assembly>.md`;
   the row starts with `✓` (patchable) or `✗` (+ reason). Engine internals → `patchable-VintagestoryLib.md`;
   AI/pathfinding → `patchable-VSEssentials.md`; survival content → `patchable-VSSurvivalMod.md`.
 
@@ -55,5 +55,5 @@ already profiles.
 
 - The generated docs are large per-namespace/per-assembly files — **Grep, don't Read** them whole.
 - Decompiled `.cs` retains official `///` XML doc comments (ILSpy merged `VintagestoryAPI.xml`).
-- Everything is one VS version (1.22.3). After a VS update the tree is stale until re-decompiled +
-  regenerated — check `vs-game-reference/README.md` for the version stamp.
+- Everything reflects one VS version (stamped in every generated file). After a VS update the tree is
+  stale until re-decompiled + regenerated — check `README.md` in the reference root for the version.

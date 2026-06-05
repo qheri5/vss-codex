@@ -1,19 +1,19 @@
 # Pipeline
 
-`vss-codex.ps1` runs four steps. Each is an independently-runnable script in `steps/` (useful for
-debugging a single stage). All output goes under the workspace container, never into a git repo.
+`vss-codex.ps1` runs three steps. Each is an independently-runnable script in `steps/` (useful for
+debugging a single stage). All output goes under the gitignored `out/` folder.
 
 | # | Step | Input | Output | Notes |
 |---|---|---|---|---|
-| 01 | `01-decompile.ps1` | VS binaries (10 VS-authored DLLs) | `vs-game-reference/decompiled/<asm>/` | ensures `ilspycmd`; ~minutes; skip with `-SkipDecompile` |
-| 02 | `02-generate-docs.ps1` | decompiled refs + `VintagestoryAPI.xml` | `vs-game-reference/docs/generated/` + `build-info.json` | builds + runs `VssCodex`; path forced inside `vs-game-reference` |
-| 03 | `03-install-docs-skill.ps1` | `docs-src/`, `skill/`, `build-info.json` | `vs-game-reference/docs/` + `.claude/skills/vss/` | copies curated docs; renders skill template (UTF-8) |
-| 04 | `04-setup-mcp.ps1` | `mcp/` | `.mcp.json.example` at container root | non-invasive; does not auto-register |
+| 01 | `01-decompile.ps1` | VS binaries (the VS-authored DLLs) | `out/reference/decompiled/<asm>/` | ensures `ilspycmd`; ~minutes; skip with `-SkipDecompile` |
+| 02 | `02-generate-docs.ps1` | decompiled refs + `VintagestoryAPI.xml` | `out/reference/docs/generated/` + `build-info.json` | builds + runs `VssCodex`; path forced under the reference root |
+| 03 | `03-install-docs-skill.ps1` | `docs-src/`, `skill/`, `build-info.json` | `out/reference/docs/` + `out/.claude/skills/vss/` | copies curated docs; renders the skill (UTF-8) with the absolute reference path injected |
 
 ## Inputs
 
 - **VS install** (`-Install`, default `%APPDATA%\Vintagestory`): the `.dll`s + `VintagestoryAPI.xml`.
-- **Container** (`-Container`, default the repo's parent): where `vs-game-reference/` and `.claude/` live.
+  Or `-Zip <archive>` for converter mode.
+- **Output** (`-Out`, default `out/` inside the repo): the gitignored folder everything is written to.
 
 ## Re-run cadence
 
@@ -35,8 +35,8 @@ patchability) by comparing to the previous run's `.snapshot-*.json` — your che
 
 ## Safety guards
 
-- The output path must be inside `vs-game-reference` (step 02 refuses otherwise).
-- The formatter refuses to run if `vs-game-reference/` is a git repo (it must stay un-committable).
+- The generated-docs path must be under the reference root (step 02 refuses otherwise).
+- `out/` is gitignored, so the proprietary output can never be committed.
 - `.ps1` files are ASCII-only (Windows PowerShell 5.1 misreads UTF-8 scripts without a BOM).
 - The skill is written as UTF-8 **without** a BOM (a leading BOM can break YAML frontmatter).
 

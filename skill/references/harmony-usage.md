@@ -5,10 +5,10 @@ method-patching. Use it **only for engine internals the public API doesn't expos
 API offers (events, properties, `WorldManager`, `AlwaysActive`), use the API instead.
 
 > **Reality check:** *no first-party VS mod patches gameplay with Harmony* — the base game exposes
-> events/hooks for almost everything. Harmony is a third-party-mod technique. In this project,
-> VssAnchor v0.2 deliberately avoids it (native `WorldManager.LoadChunkColumn`), and v0.3 forces
-> entity activity via the public `AlwaysActive` property — also no patch. Reach for Harmony only when
-> you've confirmed the API can't do it.
+> events/hooks for almost everything. Harmony is a third-party-mod technique. Many tasks that look like
+> they need a patch don't: keep chunks loaded with the native `WorldManager.LoadChunkColumn` call, or
+> force entity activity via the public `AlwaysActive` property — no patch needed. Reach for Harmony
+> only when you've confirmed the API can't do it.
 
 ## Patch kinds
 
@@ -37,7 +37,7 @@ body and is patchable.
   take effect; verify with `Harmony.GetPatchInfo(method)` or a log in the patch.
 
 Check the flag before writing the patch: Grep the method in
-`vs-game-reference/docs/generated/harmony/patchable-<assembly>.md`.
+`docs/generated/harmony/patchable-<assembly>.md`.
 
 ## Bootstrap idiom (in your `ModSystem`)
 
@@ -76,7 +76,7 @@ Patches are declared with attributes (`[HarmonyPatch(typeof(T), "Method")]` + `[
 
 ## For server performance work
 
-Start from `vs-game-reference/docs/generated/harmony/high-value-targets.md` (curated hotspots:
+Start from `docs/generated/harmony/high-value-targets.md` (curated hotspots:
 `TickEntities`, `EntityBehaviorTaskAI.OnGameTick`, `UpdateTrackedEntityState`, `SpawnReadyMobs`,
 `AStar.FindPathOrEscapePath`, …) and the mechanism write-up in `docs/entity-simulation.md`. Measure
 with the engine's `FrameProfiler` (most hot paths are already bracketed with `FrameProfiler.Enter`).

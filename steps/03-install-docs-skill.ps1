@@ -1,16 +1,18 @@
 #requires -Version 5.1
 <#
-.SYNOPSIS  Step 03 - install curated docs into the knowledge base + render & install the vss skill.
+.SYNOPSIS  Step 03 - install curated docs into the reference + render the vss skill.
 .DESCRIPTION
-    Copies the committable curated docs (docs-src/) into ../vs-game-reference/docs/, then renders
-    skill/SKILL.md.template with values from build-info.json and installs the skill into
-    <container>/.claude/skills/vss/. The skill source lives in this repo; the installed copy is output.
+    Copies the committable curated docs (docs-src/) into the reference's docs/, then renders
+    skill/SKILL.md.template with values from build-info.json and writes the skill into -SkillOut
+    (out/.claude/skills/vss/). The absolute reference path is injected so the skill keeps pointing at
+    the knowledge base after you copy it into a Claude Code project. The skill source lives in this
+    repo; the rendered copy is output.
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Ref,
     [Parameter(Mandatory)][string]$RepoRoot,
-    [Parameter(Mandatory)][string]$Container
+    [Parameter(Mandatory)][string]$SkillOut
 )
 $ErrorActionPreference = 'Stop'
 
@@ -31,19 +33,21 @@ Write-Host "  curated docs installed -> $docs"
 $utf8 = New-Object System.Text.UTF8Encoding $false
 $info = [System.IO.File]::ReadAllText((Join-Path $gen 'build-info.json'), $utf8) | ConvertFrom-Json
 $tpl  = [System.IO.File]::ReadAllText((Join-Path $RepoRoot 'skill\SKILL.md.template'), $utf8)
+# Absolute path to the reference root, so the skill works wherever it is later copied.
+$refAbs = (Resolve-Path $Ref).Path
 $map = @{
     'VS_VERSION'     = $info.VsVersion;     'API_TYPES'   = $info.ApiTypes
     'API_NAMESPACES' = $info.ApiNamespaces; 'COVERAGE_PCT'= $info.CoveragePct
     'EVENTS'         = $info.Events;        'ENUMS'       = $info.Enums
     'LIB_TYPES'      = $info.LibTypes;      'GENERATED_ON'= $info.GeneratedOn
+    'REFERENCE_PATH' = $refAbs
 }
 foreach ($k in $map.Keys) { $tpl = $tpl -replace "\{\{$k\}\}", [string]$map[$k] }
 
-$skill = Join-Path $Container '.claude\skills\vss'
-New-Item -ItemType Directory -Force (Join-Path $skill 'references') | Out-Null
-New-Item -ItemType Directory -Force (Join-Path $skill 'examples')   | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $SkillOut 'references') | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $SkillOut 'examples')   | Out-Null
 # SKILL.md without BOM (a leading BOM can break YAML frontmatter detection)
-[System.IO.File]::WriteAllText((Join-Path $skill 'SKILL.md'), $tpl, (New-Object System.Text.UTF8Encoding $false))
-Copy-Item (Join-Path $RepoRoot 'skill\references\*') (Join-Path $skill 'references') -Recurse -Force
-Copy-Item (Join-Path $RepoRoot 'skill\examples\*')   (Join-Path $skill 'examples')   -Recurse -Force
-Write-Host "  skill installed -> $skill"
+[System.IO.File]::WriteAllText((Join-Path $SkillOut 'SKILL.md'), $tpl, (New-Object System.Text.UTF8Encoding $false))
+Copy-Item (Join-Path $RepoRoot 'skill\references\*') (Join-Path $SkillOut 'references') -Recurse -Force
+Copy-Item (Join-Path $RepoRoot 'skill\examples\*')   (Join-Path $SkillOut 'examples')   -Recurse -Force
+Write-Host "  skill rendered -> $SkillOut"

@@ -1,8 +1,8 @@
 # VS API — how to use it
 
 How a Vintage Story mod plugs into the engine. Look types up in
-`vs-game-reference/docs/generated/api/`; read ground truth in
-`vs-game-reference/decompiled/VintagestoryAPI/`.
+`docs/generated/api/`; read ground truth in
+`decompiled/VintagestoryAPI/`.
 
 ## A mod = a `ModSystem` (plus optional content)
 
@@ -25,8 +25,8 @@ lifecycle methods **in this order**:
 **Rule:** don't touch `api.Assets` / look up blocks before `AssetsLoaded`. Register event handlers
 that need assets in `Start()` (the `AssetsFinalizers` event fires before `StartServerSide`).
 
-Embed metadata with `[assembly: ModInfo(...)]` (see `vs-mod-vssanchor/src/AnchorModSystem.cs`) — a
-server-only code mod then deploys as a single DLL dropped into `Mods/`.
+Embed metadata with `[assembly: ModInfo(...)]` on the assembly — a server-only code mod then deploys
+as a single DLL dropped into the server's `Mods/` folder.
 
 ## The API tree
 

@@ -5,8 +5,8 @@
     Reflects over the local Vintage Story binaries with Mono.Cecil (shipped in the VS install)
     to emit the API + Harmony markdown references + a build-info.json handoff for the formatter.
 
-    This project is committable. Its OUTPUT is proprietary (derived from VS binaries) and must only
-    ever be written into the gitignored vs-game-reference/ tree — see ../../vss-codex.ps1.
+    This project is committable. Its OUTPUT is derived from VS binaries and must only ever be written
+    into the gitignored out/ tree — see ../../vss-codex.ps1.
   -->
 
   <PropertyGroup>
