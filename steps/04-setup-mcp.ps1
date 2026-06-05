@@ -5,7 +5,7 @@
     The MCP server source lives in this repo (mcp/server, a stub). This step does NOT auto-register it
     with Claude Code (that would edit settings) - it just confirms the scaffold and drops a registration
     example at the container root so the user can enable it. See mcp/README.md for the design + how to
-    flesh out the live weavy integration.
+    flesh out the live-server integration.
 #>
 [CmdletBinding()]
 param(

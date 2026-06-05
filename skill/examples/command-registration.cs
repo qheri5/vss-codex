@@ -1,5 +1,4 @@
 // Registering a server chat command — the modern fluent ChatCommands API.
-// Verified against vs-mod-vssanchor/src/AnchorModSystem.cs (deployed, working).
 // Register in StartServerSide. Privileges come from Vintagestory.API.Server.Privilege.
 
 using Vintagestory.API.Common;

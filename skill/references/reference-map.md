@@ -32,11 +32,9 @@ Where each subsystem lives in `vs-game-reference/decompiled/`. (Extends `docs/RE
 | Pathfinding (A*) | `VSEssentials/Vintagestory.Essentials/AStar.cs`, `WaypointsTraverser.cs`, `PathfindSystem.cs` |
 | Modding entry points | `VintagestoryAPI/Vintagestory.API.Common/ModSystem.cs`, `Vintagestory.API.Server/ICoreServerAPI.cs`, `IServerEventAPI.cs`, `IWorldManagerAPI.cs` |
 
-## Our own code (committable, not proprietary)
+## The builder (committable, not proprietary)
 
-| What | Path (in `vintage-story-server/`) |
+| What | Path |
 |---|---|
-| Doc generator | `scripts/VsRefDocGen/` (Mono.Cecil) + `scripts/generate-vs-docs.ps1` |
-| Mod deploy / scaffold | `scripts/deploy-mod.ps1`, `scripts/new-mod.ps1` |
-| Load benches (weavy) | `scripts/vs-anchor-bench.sh`, `scripts/vs-loadtest.sh` |
-| The VssAnchor mod | `../vs-mod-vssanchor/` |
+| Generator + formatter | `vss-codex/` (run `vss-codex/vss-codex.ps1` to rebuild the reference) |
+| MCP scaffold | `vss-codex/mcp/` |

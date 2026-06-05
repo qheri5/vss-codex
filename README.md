@@ -1,99 +1,127 @@
 # vss-codex
 
-**One command turns a Vintage Story install into a complete, browsable knowledge base — API docs,
-function (Harmony) catalog, engine internals — and installs a Claude Code skill + an MCP scaffold to
-use it.**
+**Point it at any Vintage Story version and get a complete, browsable map of the entire modding
+surface — then hand that map to your AI.**
 
-`vss-codex` is the single source of the VSS reference *tooling*. The **output** it produces
-(decompiled code + generated docs) is proprietary and is written **outside** this repo, into the
-gitignored `../vs-game-reference/` tree — it is never committed.
+One command turns a Vintage Story install (or a freshly downloaded server archive) into a complete
+knowledge base — API docs, a function (Harmony) catalog, and engine internals — then installs a
+Claude Code skill and scaffolds an MCP so an AI assistant can use it. The reference it builds
+(decompiled code + generated docs) stays **local and gitignored** — only the tooling lives here.
+
+Vintage Story is a closed-source, single-binary C# game: everything is a mod, and the API is large.
+Figuring out what's available usually means decompiling DLLs by hand and grepping. `vss-codex` does
+that once, structures the result, and keeps it in sync with whatever game version you're targeting.
+
+## Who it's for
+
+The same build serves three audiences — for **client or server** mods and tools, at any level of AI
+involvement. Pick the layer that fits how you work:
+
+- **Modders & tool developers** → the **knowledge base** is a searchable reference for the whole API,
+  every Harmony-patchable method, the events/enums, and the engine internals. Far faster than
+  decompiling and reading thousands of files.
+- **People building mods with Claude (or another AI)** → the **skill** drops accurate, version-pinned
+  grounding straight into the assistant, so it answers about the real VS API instead of guessing.
+- **Developers who want the AI in the loop at runtime** → the **MCP** (a scaffold to flesh out) lets
+  the assistant observe and drive a live server — run console commands, read logs, deploy, benchmark.
+
+Everyone gets the same up-to-date reference; you decide how much of it the AI touches.
+
+## How it works
 
 ```
                  vss-codex.ps1  (the formatter / orchestrator)
                         │
-  ┌─────────┬──────────┼───────────────┬─────────────┐
-  ▼         ▼          ▼                ▼             ▼
-01 decompile  02 generate (VssCodex)  03 install     04 scaffold
-ilspycmd      Mono.Cecil → markdown   docs + skill   MCP
+  ┌──────────┬─────────┼────────────────┬──────────────┐
+  ▼          ▼         ▼                 ▼              ▼
+01 decompile  02 generate (VssCodex)  03 install      04 scaffold
+ilspycmd      Mono.Cecil → markdown   docs + skill    MCP
   │              │                       │              │
   ▼              ▼                       ▼              ▼
-vs-game-reference/decompiled/   …/docs/generated/   .claude/skills/vss/   vss-codex/mcp/
+vs-game-reference/decompiled/  …/docs/generated/   .claude/skills/vss/   vss-codex/mcp/
 ```
+
+1. **Decompile** the Vintage Story assemblies with `ilspycmd`.
+2. **Generate** the docs from the binaries with Mono.Cecil (no parsing of decompiled text): the API
+   reference, events/enums indexes, an engine-internals surface, the Harmony patchability catalog,
+   and a version-diff CHANGELOG.
+3. **Install** the curated notes and render + install the `vss` skill.
+4. **Scaffold** the MCP and drop a registration example.
+
+It re-runs idempotently, so you can rebuild against a new game version any time.
 
 ## Quickstart
 
+No paths to configure: the script finds itself (so you can run it from anywhere), defaults the game
+install to `%APPDATA%\Vintagestory`, and writes its output next to the repo. Override any of that with
+a flag.
+
 ```powershell
-# Build the whole knowledge base + install the skill + scaffold the MCP, from your local VS install
+# Build everything from your local Vintage Story install
 ./vss-codex.ps1
 
-# CONVERTER MODE: one downloaded server archive in -> full codex + skill + MCP out (auto-extract + locate)
-./vss-codex.ps1 -Zip "C:\Downloads\vs_server_win-x64_1.21.1.zip"
+# Converter mode: hand it a downloaded server/client archive (.zip or .tar.gz) and it does the rest
+./vss-codex.ps1 -Zip <path-to-vs-archive>
 
-# Faster iteration when the decompiled tree already exists (skip step 01)
+# Use a non-default game install
+./vss-codex.ps1 -Install <vs-install-dir>
+
+# Reuse the existing decompiled tree (skip step 01) for fast doc/skill iteration
 ./vss-codex.ps1 -SkipDecompile
-
-# Point at a specific VS install
-./vss-codex.ps1 -Install "D:\Games\Vintagestory"
 ```
 
-**Converter mode** (`-Zip`) takes a VS server/client archive (`.zip` or `.tar.gz`, e.g. from
-`https://cdn.vintagestory.at/gamefiles/stable/vs_server_win-x64_<version>.zip`), extracts it, finds the
-binaries automatically, and runs the whole pipeline — nothing else to set up. Server-only archives lack
-the client assemblies (`Vintagestory.dll`, crash reporter, ModMaker); those are skipped cleanly.
+**Converter mode** (`-Zip`) is the zero-setup path: download an official server build (e.g. from
+`https://cdn.vintagestory.at/gamefiles/stable/`), point `-Zip` at it, and `vss-codex` extracts it,
+locates the binaries, and runs the whole pipeline. Server-only archives simply lack the client-only
+assemblies; those are skipped cleanly.
 
-Requirements: .NET 10 SDK (`dotnet`), `ilspycmd` (auto-installed as a global tool), and either a local
-VS install or a VS archive (the binaries + `VintagestoryAPI.xml` are read directly). Optional for the
-MCP stub: Python + `mcp`. Tested end-to-end on VS **1.20**, **1.21**, and **1.22**.
+**Requirements:** the .NET 10 SDK (`dotnet`) and `ilspycmd` (auto-installed as a global tool). You
+need either a local VS install or a VS archive — the binaries and `VintagestoryAPI.xml` are read
+directly. The MCP stub additionally wants Python + the `mcp` package. Tested end-to-end on Vintage
+Story **1.20**, **1.21**, and **1.22**.
 
-## What it produces (into `../vs-game-reference/`, gitignored)
+## What it produces
 
-- `decompiled/` — the 10 VS-authored assemblies (ILSpy).
-- `docs/generated/api/` — API endpoints (1 file/namespace) + `events.md` + `enums.md` + `lib/`
-  (engine internals); official + inherited summaries, constructors, `[Obsolete]` flags.
-- `docs/generated/harmony/` — every method flagged ✓/✗ Harmony-patchable (1 file/assembly) +
-  curated `high-value-targets.md`.
-- `docs/generated/CHANGELOG-<old>-to-<new>.md` — what changed across a VS update.
-- `docs/{README,entity-simulation}.md` — curated hand notes (installed from `docs-src/`).
+Everything lands in `../vs-game-reference/` (a sibling of this repo). It's derived from the game's
+proprietary binaries, so it's **gitignored and never committed** — only the tooling in this repo is.
+
+- `decompiled/` — the VS-authored assemblies (ILSpy output).
+- `docs/generated/api/` — API endpoints (one file per namespace) + `events.md` + `enums.md` + `lib/`
+  (engine internals); official + inherited summaries, constructors, and `[Obsolete]` flags.
+- `docs/generated/harmony/` — every method flagged ✓/✗ Harmony-patchable (one file per assembly), plus
+  a curated `high-value-targets.md`.
+- `docs/generated/CHANGELOG-<old>-to-<new>.md` — what changed across a game update.
 - `.claude/skills/vss/` — the rendered Claude Code skill (build stats injected).
-- `vss-codex/mcp/` — the MCP scaffold + a `.mcp.json.example` at the container root.
+- `.mcp.json.example` — a registration example for the MCP scaffold.
 
-## What lives here (committable)
+## What's in this repo
 
 | Path | Role |
 |---|---|
-| `vss-codex.ps1` + `steps/` | the **formatter** — runs the pipeline, installs in place |
+| `vss-codex.ps1` + `steps/` | the **formatter** — runs the pipeline and installs everything in place |
 | `src/VssCodex/` | the **generator** — Mono.Cecil → markdown (C#) |
 | `skill/` | the **skill source** (`SKILL.md.template` + references + examples) |
-| `docs-src/` | curated docs source (prose + `file:line`, **no verbatim decompiled code**) |
+| `docs-src/` | curated docs source (prose + `file:line`, no verbatim decompiled code) |
 | `mcp/` | the **MCP** design doc + stub server |
 | `docs/` | this project's own documentation |
-| `tests/VssCodex.Tests/` | xUnit unit tests for the generator's pure logic |
+| `tests/VssCodex.Tests/` | xUnit unit tests for the generator |
 
-## Tests
+## Tests & error handling
 
 ```powershell
 dotnet test tests/VssCodex.Tests
 ```
 
-39 xUnit tests cover the version-sensitive logic — doc-comment id generation (generics, byref, arrays,
-nested types, ctors), C# signature rendering, `[Obsolete]` detection, XML-summary flattening + cref
-shortening, inherited-summary resolution, Harmony patchability (concrete vs abstract vs P/Invoke), and
-the snapshot/CHANGELOG diff. Fixtures are read back from the test assembly with Mono.Cecil, so the
-tests need **no** Vintage Story binaries.
+39 xUnit tests cover the version-sensitive logic: doc-comment id generation (generics, byref, arrays,
+nested types, constructors), C# signature rendering, `[Obsolete]` detection, XML-summary flattening,
+inherited-summary resolution, Harmony patchability, and the snapshot/CHANGELOG diff. Fixtures are read
+back from the test assembly with Mono.Cecil, so the tests need no game binaries.
 
-**Error handling:** the generator returns a non-zero exit with a one-line message (no stack trace) on a
-missing assembly (exit 2) or bad arguments (exit 1); the formatter traps any failure and prints a clean
-`vss-codex FAILED` banner with the reason, exiting 1.
+The generator exits non-zero with a one-line message (no stack trace) on a missing assembly or bad
+arguments; the formatter traps any failure, prints a clean banner with the reason, and exits 1.
 
-## Rules
-
-- **Never commit proprietary output.** Decompiled code + generated docs go only to
-  `../vs-game-reference/` (`.gitignore = *`). Committable curated docs reference the decompiled
-  source by `file:line` and describe it in prose — they embed no verbatim decompiled code.
-- **Re-run after every VS update** so the reference (and the skill's build stamp) track the deployed
-  build. The version is stamped into every generated file.
-- All artifacts are **English**.
+## Learn more
 
 See [`docs/architecture.md`](docs/architecture.md), [`docs/pipeline.md`](docs/pipeline.md), and
-[`docs/knowledge-base-layout.md`](docs/knowledge-base-layout.md) for details, and
+[`docs/knowledge-base-layout.md`](docs/knowledge-base-layout.md), plus
 [`mcp/README.md`](mcp/README.md) for the MCP design.

@@ -33,7 +33,7 @@ public class ExamplePatchModSystem : ModSystem
 }
 
 // Example: observe the active-state predicate (PhysicsManager.UpdateTrackedEntityState).
-// This is illustrative — for the v0.3 bench we instead set entity.AlwaysActive via the public API,
+// This is illustrative — a headless bench would instead set entity.AlwaysActive via the public API,
 // which the engine itself honors (no patch). Use a patch only when there is no such knob.
 [HarmonyPatch(typeof(PhysicsManager), "UpdateTrackedEntityState")]
 public static class UpdateTrackedEntityStatePatch

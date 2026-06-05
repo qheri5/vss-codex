@@ -5,8 +5,8 @@
       "command": "python",
       "args": ["vss-codex/mcp/server/server.py"],
       "env": {
-        "VSS_SSH_HOST": "weavy@192.168.1.80",
-        "VSS_CONTAINER": "vsserver-dev"
+        "VSS_SSH_HOST": "user@your-vs-host",
+        "VSS_CONTAINER": "your-vs-container"
       }
     }
   }

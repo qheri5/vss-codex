@@ -7,8 +7,8 @@
 
 ## What this is
 
-The **game-understanding base** for the VSS project, **produced by the `vss-codex` repo**. Don't edit
-it by hand — it is rebuilt from a VS install by one command:
+The **game-understanding base**, **produced by the `vss-codex` repo**. Don't edit it by hand — it is
+rebuilt from a VS install by one command:
 
 ```powershell
 ..\vss-codex\vss-codex.ps1            # full rebuild (decompile + generate + install)

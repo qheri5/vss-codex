@@ -40,7 +40,7 @@ copied verbatim. The installed copy is *output*; the source of truth is here.
 
 ## 4. MCP — `mcp/`
 
-Scaffold + design doc for a server that drives the live VS server on weavy (A1: SSH + console + logs;
+Scaffold + design doc for an MCP server that drives a live VS server (A1: SSH + console + logs;
 A2: telemetry mod). Stub tools today. See `mcp/README.md`.
 
 ## Data flow & the committable/proprietary boundary
