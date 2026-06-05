@@ -1,6 +1,6 @@
 # Output layout (`out/`)
 
-What `vss-codex.ps1` produces. All of it is **gitignored** — it's derived from proprietary game
+What `vss-codex` produces. All of it is **gitignored** — it's derived from proprietary game
 binaries and is never committed.
 
 ```

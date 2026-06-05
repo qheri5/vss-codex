@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace VssCodex;
 
 /// <summary>
-/// Machine-readable handoff from the generator to the formatter (vss-codex.ps1): the version + counts
+/// Machine-readable handoff from the generator to the skill renderer: the version + counts
 /// the formatter injects into the skill template and prints in its summary. Written to the output root
 /// as build-info.json (gitignored, like everything under the proprietary tree).
 /// </summary>

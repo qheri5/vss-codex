@@ -1,7 +1,8 @@
 # Architecture
 
-`vss-codex` has three cooperating parts. The **generator** extracts data; the **formatter**
-orchestrates the pipeline; the **skill** is the consumable output.
+`vss-codex` is a single cross-platform .NET tool (`src/VssCodex/`, run with `dotnet run`). It has
+three cooperating parts: the **orchestrator** runs the pipeline; the **generator** extracts the data;
+the **skill** is the consumable output. No PowerShell — it runs identically on Windows, Linux, macOS.
 
 ## 1. Generator — `src/VssCodex/` (C#, Mono.Cecil)
 
@@ -9,7 +10,7 @@ Reflects over the local VS binaries (no decompiled-text parsing) to emit markdow
 
 | File | Role |
 |---|---|
-| `Program.cs` | entry; orchestrates the passes; writes `build-info.json` |
+| `Generator.cs` | drives the passes below; writes `build-info.json` |
 | `CecilContext.cs` | Mono.Cecil reader + cross-assembly resolver (install + Lib + Mods) |
 | `DocId.cs` | XML doc-comment IDs (`T:`/`M:`/`P:`…) to match `VintagestoryAPI.xml` |
 | `XmlDocIndex.cs` | parse the XML, flatten `<summary>` |
@@ -20,24 +21,28 @@ Reflects over the local VS binaries (no decompiled-text parsing) to emit markdow
 | `HarmonyTargetGenerator.cs` | Doc B: ✓/✗ patchable catalog per assembly |
 | `SymbolSnapshot.cs` + `ChangelogGenerator.cs` | version fingerprint + inter-version diff |
 | `MarkdownWriter.cs` | banners, anchors, writing |
-| `BuildInfo.cs` | the version+counts handoff to the formatter |
+| `BuildInfo.cs` | the version+counts handoff to the skill renderer |
 
-It takes `--install <VS dir> --out <generated dir>` and is **pure**: same inputs → same outputs.
+`Generator.Run(install, genRoot)` is **pure**: same inputs → same outputs.
 
-## 2. Formatter — `vss-codex.ps1` + `steps/`
+## 2. Orchestrator — `Program.cs` + `Pipeline.cs` (C#)
 
-The orchestrator. It resolves the VS install and the output dir (`-Out`, default `out/`), then runs
-three steps (decompile → generate → install docs + render skill), each an independently-runnable
-`steps/NN-*.ps1`. It reads `build-info.json` to render the skill template and print a summary.
+`Program.cs` parses `--install` / `--zip` / `--out` / `--skip-decompile`; `Pipeline.cs` runs the three
+steps in-process: **decompile** (`Decompiler.cs` shells out to `ilspycmd`, auto-installed,
+crash-isolated), **generate** (`Generator.cs`), **install docs + render skill** (`CuratedDocs.cs` +
+`SkillRenderer.cs`). Converter mode (`--zip`) extracts an archive via pure .NET (`ArchiveExtractor.cs`).
 **Self-contained output:** everything lands under the gitignored `out/` — the reference in
-`out/reference/`, the rendered skill in `out/.claude/skills/vss/`.
+`out/reference/`, the rendered skill in `out/.claude/skills/vss/`. A top-level try/catch prints a clean
+failure and returns non-zero.
 
 ## 3. Skill — `skill/` → `out/.claude/skills/vss/`
 
-A lookup skill (Read/Glob/Grep only). `SKILL.md.template` carries `{{PLACEHOLDERS}}` the formatter
-fills from `build-info.json` (version, type counts, coverage) and the absolute reference path. The
-`references/` and `examples/` are copied verbatim. The rendered copy is *output*; the source of truth
-is here. To use it, copy `out/.claude/skills/vss/` into a Claude Code project's `.claude/skills/`.
+A lookup skill (Read/Glob/Grep only). `SKILL.md.template` carries `{{PLACEHOLDERS}}` the renderer fills
+from `build-info.json` (version, type counts, coverage) and the **absolute reference path** (so the
+copied skill still resolves the knowledge base). The `references/` and `examples/` are copied verbatim.
+The `skill/` + `docs-src/` sources ship with the tool (copied to its output as content), so a single
+`dotnet run` is self-contained. To use the skill, copy `out/.claude/skills/vss/` into a Claude Code
+project's `.claude/skills/`.
 
 ## Data flow & the committable/proprietary boundary
 

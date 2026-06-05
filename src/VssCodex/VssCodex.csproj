@@ -1,12 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    VssCodex — the generator at the heart of the vss-codex knowledge-base builder.
-    Reflects over the local Vintage Story binaries with Mono.Cecil (shipped in the VS install)
-    to emit the API + Harmony markdown references + a build-info.json handoff for the formatter.
-
-    This project is committable. Its OUTPUT is derived from VS binaries and must only ever be written
-    into the gitignored out/ tree — see ../../vss-codex.ps1.
+    VssCodex: the cross-platform vss-codex tool. It decompiles the Vintage Story binaries, generates
+    the API + Harmony markdown references, installs the curated docs, and renders the vss skill.
+    One entry point (dotnet run). Runs on Windows, Linux and macOS.
+    OUTPUT is derived from VS binaries and must only ever be written into the gitignored out/ tree.
   -->
 
   <PropertyGroup>
@@ -16,16 +14,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>VssCodex</AssemblyName>
     <RootNamespace>VssCodex</RootNamespace>
-    <!-- DEV only on PC: reference Mono.Cecil from the local VS install (same convention as the mods) -->
-    <VintagestoryDir>$(APPDATA)\Vintagestory</VintagestoryDir>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Mono.Cecil">
-      <HintPath>$(VintagestoryDir)\Lib\Mono.Cecil.dll</HintPath>
-      <!-- Private=true: copy Cecil next to the tool so it runs standalone -->
-      <Private>true</Private>
-    </Reference>
+    <!-- Cross-platform: Mono.Cecil from NuGet (no coupling to a local VS install path). -->
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The skill source + curated docs travel with the tool so it is self-contained at runtime. -->
+    <Content Include="..\..\docs-src\**\*.md">
+      <Link>content\docs-src\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\skill\**\*">
+      <Link>content\skill\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
