@@ -36,7 +36,6 @@ public static class Pipeline
             Banner("vss-codex  -  building the Vintage Story knowledge base");
             Console.WriteLine($"  install : {install}");
             Console.WriteLine($"  output  : {outDir}");
-            Console.WriteLine($"  steps   : {total}{(o.SkipDecompile ? " (decompile skipped)" : "")}");
 
             if (o.SkipDecompile)
                 Console.WriteLine("\n  (decompile skipped: --skip-decompile, reusing existing decompiled tree)");

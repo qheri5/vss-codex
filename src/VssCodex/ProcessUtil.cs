@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace VssCodex;
 
@@ -46,6 +47,42 @@ public static class ProcessUtil
         {
             Console.Error.WriteLine($"  process error ({Path.GetFileName(exe)}): {ex.Message}");
             return -1;
+        }
+    }
+
+    /// <summary>
+    /// Like <see cref="Run"/> but captures the child's combined stdout+stderr instead of echoing it, and
+    /// returns it alongside the exit code. Lets a caller stay quiet on success and surface the output
+    /// only on failure. Same -2 (timeout) / -1 (launch error) sentinels.
+    /// </summary>
+    public static (int exit, string output) RunCaptured(string exe, IReadOnlyList<string> args, int timeoutMs, string? workingDir = null)
+    {
+        var psi = new ProcessStartInfo(exe)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        if (workingDir != null) psi.WorkingDirectory = workingDir;
+        foreach (var a in args) psi.ArgumentList.Add(a);
+
+        var sb = new StringBuilder();
+        void Collect(object _, DataReceivedEventArgs e) { if (e.Data != null) lock (sb) sb.AppendLine(e.Data); }
+        try
+        {
+            using var p = new Process { StartInfo = psi };
+            p.OutputDataReceived += Collect;
+            p.ErrorDataReceived += Collect;
+            p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
+            if (!p.WaitForExit(timeoutMs)) { try { p.Kill(entireProcessTree: true); } catch { } return (-2, sb.ToString()); }
+            p.WaitForExit(); // flush the async readers
+            return (p.ExitCode, sb.ToString());
+        }
+        catch (Exception ex)
+        {
+            return (-1, sb.ToString() + ex.Message);
         }
     }
 }

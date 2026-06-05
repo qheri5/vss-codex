@@ -109,13 +109,19 @@ out/
 │   │   ├── README.md, entity-simulation.md   curated notes
 │   │   └── generated/          api/ (endpoints + events.md + enums.md + lib/), harmony/
 │   │                           (✓/✗ patchable catalog + curated hotspots), CHANGELOG-*.md
-│   └── site/                   the same docs as an ordered, searchable MkDocs site (open index.html)
+│   └── site/                   the same docs as an ordered, searchable MkDocs site (run serve-docs.cmd/.sh)
 └── .claude/skills/vss/         the rendered Claude Code skill
 ```
 
-To browse the site, **double-click `serve-docs.cmd` (Windows) or `serve-docs.sh` (Linux/macOS)** in
-`out/reference/site/` — it serves the folder and opens it at <http://localhost:8000>. Serving is
-required because Material's search loads its index over HTTP and can't run from a `file://` page.
+### Browsing the site
+
+> **To open the browsable docs, double-click `serve-docs.cmd` (Windows) or `serve-docs.sh`
+> (Linux/macOS) in `out/reference/site/`.** It serves the folder and opens it at
+> <http://localhost:8000>.
+
+Don't open `index.html` directly: Material's **search** loads its index over HTTP and can't run from a
+`file://` page, so opening the file directly shows the pages but no working search. `serve-docs.*` is
+the one-click way to get the full experience.
 
 ### Using the skill
 
