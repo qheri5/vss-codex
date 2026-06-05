@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: publish ${{ matrix.rid }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [ win-x64, linux-x64, osx-x64, osx-arm64 ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      # Self-contained single-file binary; the skill + curated docs ship in a content/ folder
+      # next to the executable (the tool resolves them via AppContext.BaseDirectory).
+      - name: Publish
+        run: >
+          dotnet publish src/VssCodex/VssCodex.csproj -c Release -r ${{ matrix.rid }}
+          --self-contained -p:PublishSingleFile=true -p:DebugType=none
+          -o publish/${{ matrix.rid }}
+      - name: Package
+        run: |
+          cd publish/${{ matrix.rid }}
+          zip -r "../../vss-codex-${{ github.ref_name }}-${{ matrix.rid }}.zip" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vss-codex-${{ matrix.rid }}
+          path: vss-codex-${{ github.ref_name }}-${{ matrix.rid }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create / update the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
+          body: |
+            Self-contained binaries (no .NET SDK required) for Windows, Linux, and macOS.
+
+            Each archive contains the `vss-codex` executable plus a `content/` folder. Unzip and run, e.g.
+            `./vss-codex --zip <vintage-story-archive>` or `./vss-codex --install <vs-dir>`. `ilspycmd`
+            is auto-installed on first run (needs the .NET SDK only for that step) — or decompilation is
+            skipped with `--skip-decompile`.
+
+            The output is derived from proprietary Vintage Story binaries: keep it local, do not
+            redistribute it. You need a legally obtained copy of the game.

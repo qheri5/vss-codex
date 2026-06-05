@@ -12,8 +12,13 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>VssCodex</AssemblyName>
+    <AssemblyName>vss-codex</AssemblyName>
     <RootNamespace>VssCodex</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Generate a complete, always-current Vintage Story modding reference (API, Harmony catalog, events/enums, engine internals) and a Claude Code skill, straight from the game binaries.</Description>
+    <Authors>qheri5</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/qheri5/vss-codex</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

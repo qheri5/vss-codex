@@ -1,0 +1,25 @@
+vss-codex
+=========
+
+This tool's source code is licensed under the MIT License (see LICENSE). It contains no Vintage Story
+game code.
+
+IMPORTANT — proprietary game content
+------------------------------------
+vss-codex decompiles Vintage Story's copyrighted binaries on your machine and generates a reference
+derived from them. That generated output (decompiled source, generated docs, the rendered skill) is a
+derivative of proprietary game files. It is NOT covered by the MIT License above and is NOT redistributable.
+
+By using this tool you agree that you:
+  - own a legally obtained copy of Vintage Story and comply with its End User License Agreement;
+  - keep the generated output local and do not publish, share, or redistribute it (or any decompiled
+    source) in any form;
+  - use it solely as a development aid for building mods and tools for Vintage Story.
+
+Vintage Story is a trademark of its respective owner. This project is not affiliated with, endorsed by,
+or sponsored by the developers of Vintage Story.
+
+Third-party components
+----------------------
+  - Mono.Cecil (MIT) — assembly metadata reading, via NuGet.
+  - ilspycmd / ICSharpCode.Decompiler (MIT) — invoked as an external tool for decompilation.

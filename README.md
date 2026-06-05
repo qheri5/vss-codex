@@ -1,5 +1,8 @@
 # vss-codex
 
+[![CI](https://github.com/qheri5/vss-codex/actions/workflows/ci.yml/badge.svg)](https://github.com/qheri5/vss-codex/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **A complete, always-current reference for modding Vintage Story — generated straight from the game's
 own binaries.**
 
@@ -81,6 +84,10 @@ either a local VS install or a VS archive — the binaries and `VintagestoryAPI.
 point it at the game with `--install`/`--zip` or the `VINTAGE_STORY` environment variable (on Windows it
 defaults to `%APPDATA%\Vintagestory`). Tested end-to-end across Vintage Story **1.20–1.22**.
 
+**Prefer a prebuilt binary?** Each [release](https://github.com/qheri5/vss-codex/releases) ships a
+self-contained executable for Windows, Linux, and macOS — no .NET SDK needed. Unzip and run, e.g.
+`./vss-codex --zip <vs-archive>`.
+
 ## What it produces
 
 Everything lands in `out/` (gitignored — it's derived from the game's binaries, so it's never
@@ -132,3 +139,9 @@ arguments; the formatter traps any failure, prints a clean banner with the reaso
 
 See [`docs/architecture.md`](docs/architecture.md), [`docs/pipeline.md`](docs/pipeline.md), and
 [`docs/knowledge-base-layout.md`](docs/knowledge-base-layout.md).
+
+## License
+
+The tool's source code is [MIT](LICENSE) licensed and contains no game code. The reference it
+**generates** is derived from proprietary Vintage Story binaries — keep it local and do not
+redistribute it; you need a legally obtained copy of the game. See [`NOTICE`](NOTICE) for details.

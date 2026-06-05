@@ -6,6 +6,7 @@
 bin/
 obj/
 TestResults/
+publish/
 
 # OS / editors
 Thumbs.db
