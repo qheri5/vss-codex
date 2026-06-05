@@ -44,23 +44,62 @@ public class ArchiveExtractorTests
         Assert.EndsWith("server", install);
     }
 
+    // Build a .tar.gz from (entryType, name, payloadOrLinkTarget) tuples.
+    private static string MakeTarGz(string dir, params (TarEntryType type, string name, string data)[] entries)
+    {
+        string tar = Path.Combine(dir, "a.tar.gz");
+        using var fs = File.Create(tar);
+        using var gz = new GZipStream(fs, CompressionMode.Compress);
+        using var w = new TarWriter(gz);
+        foreach (var (type, name, data) in entries)
+        {
+            var e = new PaxTarEntry(type, name);
+            if (type is TarEntryType.SymbolicLink or TarEntryType.HardLink) e.LinkName = data;
+            else if (type is TarEntryType.RegularFile) e.DataStream = new MemoryStream(Encoding.UTF8.GetBytes(data));
+            w.WriteEntry(e);
+        }
+        return tar;
+    }
+
     [Fact]
     public void Extract_tar_gz_happy_path()
     {
         string dir = TempDir();
-        string tar = Path.Combine(dir, "a.tar.gz");
-        using (var fs = File.Create(tar))
-        using (var gz = new GZipStream(fs, CompressionMode.Compress))
-        using (var w = new TarWriter(gz))
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes("x");
-            var entry = new PaxTarEntry(TarEntryType.RegularFile, "srv/VintagestoryAPI.dll")
-            { DataStream = new MemoryStream(bytes) };
-            w.WriteEntry(entry);
-        }
-
+        string tar = MakeTarGz(dir, (TarEntryType.RegularFile, "srv/VintagestoryAPI.dll", "x"));
         string install = ArchiveExtractor.ResolveInstall(tar);
         Assert.True(File.Exists(Path.Combine(install, "VintagestoryAPI.dll")));
+    }
+
+    [Fact]
+    public void Tar_slip_entry_is_not_written_outside_dest()
+    {
+        string dir = TempDir();
+        string dest = Path.Combine(dir, "out");
+        string tar = MakeTarGz(dir,
+            (TarEntryType.RegularFile, "../escape.txt", "pwned"),
+            (TarEntryType.RegularFile, "ok/inside.txt", "fine"));
+
+        ArchiveExtractor.Extract(tar, dest);
+
+        Assert.False(File.Exists(Path.Combine(dir, "escape.txt")));
+        Assert.True(File.Exists(Path.Combine(dest, "ok", "inside.txt")));
+    }
+
+    [Fact]
+    public void Tar_symlink_and_hardlink_entries_are_skipped()
+    {
+        string dir = TempDir();
+        string dest = Path.Combine(dir, "out");
+        string tar = MakeTarGz(dir,
+            (TarEntryType.SymbolicLink, "evil-symlink", "../../escape"),
+            (TarEntryType.HardLink, "evil-hardlink", "ok/real.txt"),
+            (TarEntryType.RegularFile, "ok/real.txt", "fine"));
+
+        ArchiveExtractor.Extract(tar, dest);
+
+        Assert.False(File.Exists(Path.Combine(dest, "evil-symlink")));
+        Assert.False(File.Exists(Path.Combine(dest, "evil-hardlink")));
+        Assert.True(File.Exists(Path.Combine(dest, "ok", "real.txt")));
     }
 
     [Fact]
